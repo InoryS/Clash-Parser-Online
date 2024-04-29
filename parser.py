@@ -15,6 +15,10 @@ class handler(BaseHTTPRequestHandler):
         if not hasattr(self, 'subscription_userinfo'):
             self.subscription_userinfo = None
 
+    def log_message(self, format, *args):
+        # 覆盖此方法以避免在控制台记录每个请求
+        pass
+    
     @staticmethod
     def parse_query_parameters(path):
         # 解析 URL 中的查询参数
@@ -315,11 +319,6 @@ class handler(BaseHTTPRequestHandler):
                 yaml.dump(modified_yaml, allow_unicode=True, default_flow_style=False, sort_keys=False).encode())
         else:
             self.send_error(500, "Unable to parse YAML files, possibly due to an incorrect YAML file")
-
-
-# def log_message(self, format, *args):
-#     # 覆盖此方法以避免再控制台记录每个请求
-#     pass
 
 
 def run_server(server_class=HTTPServer, handler_class=handler, port=8000):

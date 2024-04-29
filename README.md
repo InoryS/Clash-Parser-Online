@@ -1,6 +1,112 @@
-# Clash-Parser-Online
+[English](#english) | [简体中文](#%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)
 
-这是一个在线实现的配置文件预处理(parser) 和 mixin 工具，基于 Clash For Windows（CFW）的功能。即使 CFW 不再更新，你也可以通过这个工具在线继续使用它们的 parser 和 mixin 功能，且不再受限于某某实现。
+<br>
+
+# English
+
+This is an online implementation of the configuration file preprocessing (parser) and mixin tool, based on the features of Clash For Windows (CFW).
+
+Even if CFW is no longer updated, you can continue to use their parser and mixin features online without being limited to any specific implementation.
+
+## Disclaimer
+
+This tool is only used for modifying YAML configuration files and is merely a plain text file editing tool. It does not contain any content that violates the laws and regulations of any country.
+
+## Features
+
+- Supports preprocessing of YAML configuration files.
+- Implements basic parser and mixin features. (For functionality, please refer to the CFW documentation)
+- Advanced features may not be fully implemented; please refer to the examples in this project.
+
+## Typical Use Cases
+
+1. Convert from a subscription to get a subscription link, specifying your favorite rule set.
+2. The rule set lacks certain rules or some rules are inappropriate.
+3. Use the parser feature to add elements like nodes, rules, node groups, etc., to the configuration file.
+4. Use the mixin feature to override parts of the configuration file, such as overriding enhanced-mode: fake-ip.
+5. Obtain a satisfactory configuration file subscription link.
+
+——————
+
+1. Multiple device usage, frequently changing subscriptions.
+2. Use the magic number feature, all devices use the same link.
+3. The initial design intention was to require a parser, so you need to place a valid parser.yaml.
+4. When updating subscriptions, only update the subscription link in the source.txt on the server.
+5. All devices can update their subscriptions accordingly.
+
+## Processing Workflow
+
+1. Obtain the subscription link from local or query parameters (Clash format).
+2. Obtain parser.yaml from local or query parameters.
+3. Obtain mixin.yaml from local or query parameters.
+4. Download the subscription from the link and use mixin.yaml to override its content.
+5. Use parser.yaml to preprocess it.
+6. Return the configuration file in Clash format.
+
+## Usage Instructions
+
+### Quick Deployment
+
+Deploy directly on the server and start with:
+
+`
+python3 parser.py
+`
+
+
+Then use NGINX or similar reverse proxy for SSL and port modification.
+
+You can also easily deploy this application on serverless platforms like Vercel.
+
+After deployment, send requests by constructing the following URL:
+
+```
+https://your.domain/?source=<base64-encoded-subscription-url>&parser=<base64-encoded-parser.yaml-url>&mixin=<base64-encoded-mixin.yaml-url>
+```
+
+### Parameter Explanation
+
+- `source`: Base64 encoded subscription link (Clash format)
+- `parser`: Base64 encoded `parser.yaml` download link, with the same format as CFW's parser, content as per the example files in this project.
+- `mixin`: Base64 encoded `mixin.yaml` download link, with the same format as CFW's mixin, this parameter is optional, content as per the example files in this project.
+
+For example:
+
+```
+https://example.com/?source=aHR0cDovL2xvY2FsaG9zdDoyNTUwMC9zdWI/dGFyZ2V0PWNsYXNoJm5ld19uYW1lPXRydWUmdXJsPXRlc3QmaW5zZXJ0PWZhbHNlJmNvbmZpZz1odHRwcyUzQSUyRiUyRnJhdy5naXRodWJ1c2VyY29udGVudC5jb20lMkZBQ0w0U1NSJTJGQUNMNFNTUiUyRm1hc3RlciUyRkNsYXNoJTJGY29uZmlnJTJGQUNMNFNTUl9PbmxpbmUuaW5p&parser=aHR0cHM6Ly9leGFtcGxlLmNvbS9wYXJzZXIueWFtbA==&mixin=aHR0cHM6Ly9leGFtcGxlLmNvbS9taXhpbi55YW1s
+```
+
+
+### personal use
+
+For personal use, if you are too lazy to pass parameters, you can use a preset magic number (defaults to 'jynb') to automatically read the configuration from a local file:
+
+- Create `source.txt` and `mixin.yaml` in the same directory or the upper directory of `parser.py`.
+- The first line of `source.txt` should write the subscription link, and the second line should write the encoding type of the subscription link (raw, url_encode or base64).
+
+For example:
+
+```
+https://example.com/?source=jynb&mixin=jynb
+```
+
+
+
+<br>
+<br>
+<br>
+<br>
+<br>
+
+
+
+
+
+# 简体中文
+
+这是一个在线实现的配置文件预处理 (parser) 和 mixin 工具，基于 Clash For Windows（CFW）的功能。
+
+即使 CFW 不再更新，你也可以通过这个工具在线继续使用它们的 parser 和 mixin 功能，且不再受限于某某实现。
 
 ## 免责声明
 

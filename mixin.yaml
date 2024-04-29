@@ -1,0 +1,221 @@
+mixin:
+  allow-lan: false
+  clash-for-android:
+    append-system-dns: false
+  dns:
+    enable: true
+    enhanced-mode: fake-ip #fake-ip 模式
+    fake-ip-range: 198.18.0.1/16  #fake-ip 范围
+    default-nameserver: #用于解析 nameserver 和 fallback 中的域名
+      - 119.29.29.29
+      - 223.5.5.5
+      - 114.114.114.114
+      - '[2402:4e00::]:53' #dnspod
+      - '[2400:3200::1]:53' #ali
+    nameserver: #fake-ip 模式此处仅用作规则判定，没加密的也行, redir 模式必须为加密的境外DNS，DNS不是越多越好，多了反而可能影响解析效率，一般 2-3 个即可；
+      #不在分流内的域名由于会匹配到倒数第二个规则，需要判断是否符合 GeoIP CN 分流，所以必定会向这里的 DNS 发起请求，导致 DNS 泄露，要么你把这里的 DNS 都换成加密的，要么不用 GeoIP。
+      #所以其实无所谓，因为分流内的域名是不会泄露的，这些实际上只用作规则判断，最终结果实际上还是发往节点解析
+      - https://1.12.12.12/dns-query #dnspod
+      - https://223.5.5.5/dns-query #ali
+      - 119.29.29.29
+      - 114.114.114.114
+      # - '[2402:4e00::]:53' #dnspod
+      # - '[2400:3200::1]:53' #ali
+      #- 'tls://dns.google#🚀 节点选择'  #meta 可以使用此格式让指定 dns 通过节点解析
+    fallback:                        #fake-ip 模式可不设置，#当存在 `fallback` 时，DNS 服务器将并发请求发送到此部分中的服务器以及 `nameservers` 中的服务器。 当 GEOIP 国家不是 `CN` 时，使用 fallback 服务器的答案
+      - https://8.8.8.8/dns-query
+      #- https://8.8.4.4/dns-query
+      #- https://1.1.1.1/dns-query
+      #- https://1.0.0.1/dns-query
+      #- tls://1.1.1.1:853
+      #- tls://1.0.0.1:853
+      #- tls://8.8.8.8:853
+      - tls://8.8.4.4:854
+      - https://doh.dns.sb/dns-query
+      - https://public.dns.iij.jp/dns-query
+      
+    proxy-server-nameserver:   #代理节点域名解析服务器，仅用于解析代理节点的域名
+      - https://1.12.12.12/dns-query #dnspod
+      - https://120.53.53.53/dns-query #dnspod
+      - https://doh.pub/dns-query #dnspod
+      - https://223.5.5.5/dns-query #ali
+      - https://dns.alidns.com/dns-query #ali
+
+    # nameserver-policy:               #指定指定域名使用自定义DNS解析,默认未使用
+    #   'www.baidu.com': '114.114.114.114'
+    #   '+.internal.crop.com': '10.0.0.1'
+    #   'geosite:geolocation-!cn': [tls://8.8.4.4, https://1.0.0.1/dns-query]
+    #   'www.baidu.com,+.google.cn': https://doh.pub/dns-query
+    #   'geosite:private,apple': https://dns.alidns.com/dns-query
+    #   'rule-set:google,cloudflare': 8.8.8.8
+
+    fallback-filter:    #fake-ip 模式可不设置，只作用于 fake-ip filter 列表  # 意思就算满足条件的将使用 fallback
+      geoip: true       #为真时，不匹配为 geoip 规则的使用 fallback 返回结果，geoip-code 配置 CN 就是 CN 以外的 IP 使用 fallback 结果
+      geoip-code: CN
+      # geosite: # geosite 的内容被视为已污染，仅 meta
+      #   - gxxlist
+      ipcidr:             #如果使用 `nameservers` 中的服务器解析的 IP 地址位于下面指定的子网中，则它们被视为无效，然后使用来自 `fallback` 服务器的结果
+        - 1.1.1.0/22
+        - 0.0.0.0/8
+        - 10.0.0.0/8
+        - 100.64.0.0/10
+        - 127.0.0.0/8
+        - 169.254.0.0/16
+        - 172.16.0.0/12
+        - 192.0.0.0/24
+        - 192.0.2.0/24
+        - 192.88.99.0/24
+        - 192.168.0.0/16
+        - 198.18.0.0/15
+        - 198.51.100.0/24
+        - 203.0.113.0/24
+        - 224.0.0.0/4
+        - 240.0.0.0/4
+        - 255.255.255.255/32
+      domain:  #列表中的域名直接使用 fallback 返回解析结果，即视为已污染
+        - '+.facebook.com'
+        - '+.twitter.com'
+        - '+.google.com'
+        - '+.googleapis.com'
+        - '+.google.cn'
+        - '+.googleapis.cn'
+        - '+.xn--ngstr-lra8j.com'
+        - '+.googlevideo.com'
+        - '+.gvt1.com'
+        - '+.gmail.com'
+        - '+.youtube.com'
+        - '+.youtu.be'
+        - '+.gvt0.com'
+        - '+.gvt2.com'
+        - '+.gvt3.com'
+        - '+.gstatic.com'
+        - '+.265.com'
+        - '+.2mdn.net'
+        - '+.app-measurement.com'
+        - '+.c.admob.com'
+        - '+.clickserve.dartsearch.net'
+        - '+.crl.pki.goog'
+        - '+.doubleclick.net'
+        - '+.firebase-settings.crashlytics.com'
+        - '+.google-analytics.com'
+        - '+.googleadservices.com'
+        - '+.googleanalytics.com'
+        - '+.googleoptimize.com'
+        - '+.googlesyndication.com'
+        - '+.googletagmanager.com'
+        - '+.googletagservices.com'
+        - '+.msftncsi.com'
+        - '+.msftconnecttest.com'
+        - '+.githubusercontent.com'
+        - '+.github.com'
+        - '+.nikke-kr.com'
+        - '+.fleetlogd.com'
+        - '+.intlgame.com'
+    
+    
+    fake-ip-filter:  #需要真实 IP 的域名，用于 fake-ip 模式
+      - '*.lan'
+      - '*.linksys.com'
+      - '*.linksyssmartwifi.com'
+      # Apple
+      - 'swscan.apple.com'
+      - 'mesu.apple.com'
+      - 'swquery.apple.com'
+      - 'swdownload.apple.com'
+      - 'swcdn.apple.com'
+      - 'swdist.apple.com'
+      # Microsoft Service
+      - '*.msftconnecttest.com'
+      - '*.msftncsi.com'
+      - 'xbox.*.microsoft.com'
+      - 'xbox.*.*.microsoft.com'
+      - '+.xboxlive.com'
+      #  NTP Service
+      - 'time.*.com'
+      - 'time.*.gov'
+      - 'time.*.edu.cn'
+      - 'time.*.apple.com'
+      - 'time1.*.com'
+      - 'time2.*.com'
+      - 'time3.*.com'
+      - 'time4.*.com'
+      - 'time5.*.com'
+      - 'time6.*.com'
+      - 'time7.*.com'
+      - 'ntp.*.com'
+      - 'ntp.*.com'
+      - 'ntp1.*.com'
+      - 'ntp2.*.com'
+      - 'ntp3.*.com'
+      - 'ntp4.*.com'
+      - 'ntp5.*.com'
+      - 'ntp6.*.com'
+      - 'ntp7.*.com'
+      - '*.time.edu.cn'
+      - '*.ntp.org.cn'
+      - '+.pool.ntp.org'
+      - 'time1.cloud.tencent.com'
+      # Google
+      - 'lens.l.google.com'
+      # Music Service
+      - '+.music.163.com'
+      - '+.126.net'
+      - 'musicapi.taihe.com'
+      - 'music.taihe.com'
+      - 'songsearch.kugou.com'
+      - 'trackercdn.kugou.com'
+      - '*.kuwo.cn'
+      - 'api-jooxtt.sanook.com'
+      - 'api.joox.com'
+      - 'joox.com'
+      - '+.y.qq.com'
+      - '+.music.tc.qq.com'
+      - 'aqqmusic.tc.qq.com'
+      - '+.stream.qqmusic.qq.com'
+      - '+.xiami.com'
+      - '+.music.migu.cn'
+      # Game Service
+      - '+.stun.*.*'
+      - '+.stun.*.*.*'
+      - '+.stun.*.*.*.*'
+      - '+.stun.*.*.*.*.*'
+      - '+.srv.nintendo.net'
+      - '*.n.n.srv.nintendo.net'
+      - '+.stun.playstation.net'
+      - '+.battlenet.com.cn'
+      - '+.wotgame.cn'
+      - '+.wggames.cn'
+      - '+.wowsgame.cn'
+      - '+.wargaming.net'
+      - '*.square-enix.com'
+      - '*.finalfantasyxiv.com'
+      - '*.ffxiv.com'
+      - '*.ff14.sdo.com'
+      - 'ff.dorado.sdo.com'
+      - +.media.dssott.com
+      - +.pvp.net
+      # Other
+      - 'localhost.ptlogin2.qq.com'
+      - 'localhost.sec.qq.com'
+      - 'proxy.golang.org'
+      - '+.qq.com'
+      - '+.baidu.com'
+      - '+.163.com'
+      - '+.126.net'
+      - '+.taobao.com'
+      - '+.jd.com'
+      - '+.tmall.com'
+      - '*.mcdn.bilivideo.cn'
+      - '+.nvidia.com'
+      - '+.nvidia.cn'
+      - '+.nvgs.nvidia.com'
+      - '+.nvgs.nvidia.cn'
+      - 'shark007.net'
+      - 'WORKGROUP'
+      - 'controlplane.tailscale.com'
+      - 'log.tailscale.io'
+      #captcha
+      - 'qazx.vaptcha.net'
+      - 'vaptcha.net'
+      - 'cdn.vaptcha.net'
+

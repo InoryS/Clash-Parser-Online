@@ -30,12 +30,12 @@
 
 ## 处理流程
 
-1.从本地或查询参数获取订阅链接（clash 格式）
-2.从本地或查询参数获取 parser.yaml
-3.从本地或查询参数获取 mixin.yaml
-4.从订阅链接下载订阅并使用 mixin.yaml 对其内容进行覆盖
-5.使用 parser.yaml 对其进行预处理
-6.返回 clash 格式拍外景
+1. 从本地或查询参数获取订阅链接（clash 格式）
+2. 从本地或查询参数获取 parser.yaml
+3. 从本地或查询参数获取 mixin.yaml
+4. 从订阅链接下载订阅并使用 mixin.yaml 对其内容进行覆盖
+5. 使用 parser.yaml 对其进行预处理
+6. 返回 clash 格式配置文件
 
 ## 使用说明
 

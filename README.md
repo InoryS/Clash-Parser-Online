@@ -12,6 +12,12 @@ Even if CFW is no longer updated, you can continue to use their parser and mixin
 
 This tool is only used for modifying YAML configuration files and is merely a plain text file editing tool. It does not contain any content that violates the laws and regulations of any country.
 
+## warn
+
+It is not recommended to use this service built by others. Your query parameters are likely to be recorded, thus revealing your subscription.
+
+Although it doesn't happen by default, it only takes 2 lines of code to change.
+
 ## Features
 
 - Supports preprocessing of YAML configuration files.
@@ -113,6 +119,12 @@ https://example.com/?source=jynb&mixin=jynb
 ## 免责声明
 
 此工具仅用于对 YAML 配置文件进行修改，只是一个纯文本文件修改工具。它不包含违反任何国家法律法规的内容。
+
+## 警告
+
+不建议使用别人搭建的此服务，你的查询参数很可能会被记录，从而泄露你的订阅。
+
+虽然默认不会，但要改也就 2 行代码的事。
 
 ## 功能特性
 

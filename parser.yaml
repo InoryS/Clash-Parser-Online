@@ -2,14 +2,14 @@ yaml:
     append-proxy-groups: # 添加自定义策略组
         - name: 🇪🇺 欧盟节点
           type: select
-          url: http://www.gstatic.com/generate_204
+          url: https://www.gstatic.com/generate_204
           interval: 300
           proxies:
             - 🚀 节点选择
             - DIRECT
         - name: 🚰 大流量
           type: select
-          url: http://www.gstatic.com/generate_204
+          url: https://www.gstatic.com/generate_204
           interval: 300
           proxies:
             - DIRECT
@@ -19,12 +19,12 @@ yaml:
     hightraffic: 
       type: http 
       path: ./Proxy/hightraffic.yaml 
-      #大流量机场的订阅链接，需要是clash格式
-      url: 
+      #大流量的订阅链接，需要是 clash 格式
+      url: http://localhost:25500/sub?target=clash&new_name=true&url=test&insert=false&config=https%3A%2F%2Fraw.githubusercontent.com%2FACL4SSR%2FACL4SSR%2Fmaster%2FClash%2Fconfig%2FACL4SSR_Online.ini
       interval: 21600 
       health-check:  
           enable: true
-          url: http://www.gstatic.com/generate_204
+          url: https://www.gstatic.com/generate_204
           interval: 300
 
     commands:

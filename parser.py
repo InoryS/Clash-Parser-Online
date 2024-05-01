@@ -293,6 +293,8 @@ class handler(BaseHTTPRequestHandler):
             if mixin:
                 if mixin == 'jynb':  # 幻数从本地获取
                     mixin_yaml = self.fetch_local_yaml('mixin.yaml')
+                elif mixin == 'jynb-premium': # 另一套 mixin，给其他功能不同的核心分支使用
+                    mixin_yaml = self.fetch_local_yaml('mixin-premium.yaml')
                 else:
                     mixin_url = base64.b64decode(mixin).decode()
                     mixin_yaml = self.fetch_yaml(mixin_url)

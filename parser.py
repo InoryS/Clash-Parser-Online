@@ -34,7 +34,7 @@ class handler(BaseHTTPRequestHandler):
         # 从给定的 URL 获取并解析 YAML
         try:
             print(f"trying to getting url")
-            response = requests.get(url)
+            response = requests.get(url, headers={'User-Agent': self.user_agent})
             response.raise_for_status()
             if fetch_type == 'source':
                 # 记录 Subscription-Userinfo 响应头，即流量信息
@@ -258,7 +258,8 @@ class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         # 确保初始化
         self.initialize()
-
+        
+        self.user_agent = self.headers.get('User-Agent')
         source_url, parser_url, mixin_url = None, None, None
 
         # 解析查询参数，并获取对应文件

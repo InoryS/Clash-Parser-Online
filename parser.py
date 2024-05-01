@@ -14,6 +14,10 @@ class handler(BaseHTTPRequestHandler):
         # 自定义初始化逻辑
         if not hasattr(self, 'subscription_userinfo'):
             self.subscription_userinfo = None
+            self.profile_update_interval = None
+            self.content_disposition = None
+            self.profile_web_page_url = None
+            self.user_agent = None
 
     def log_message(self, format, *args):
         # 覆盖此方法以避免在控制台记录每个请求
@@ -34,7 +38,13 @@ class handler(BaseHTTPRequestHandler):
             response.raise_for_status()
             if fetch_type == 'source':
                 # 记录 Subscription-Userinfo 响应头，即流量信息
-                self.subscription_userinfo = response.headers.get('Subscription-Userinfo', '')
+                self.subscription_userinfo = response.headers.get('Subscription-Userinfo', None)
+                # 记录 profile-update-interval 响应头，即更新间隔
+                self.profile_update_interval = response.headers.get('Profile-Update-Interval', None)
+                # 记录 content-disposition 响应头，即配置文件名称
+                self.content_disposition = response.headers.get('Content-Disposition', None)
+                # 记录 profile-web-page-url 响应头，即配置文件主页
+                self.profile_web_page_url = response.headers.get('Profile-Web-Page-Url', None)
             return yaml.safe_load(response.content)
         except Exception as error:
             print(f"Error fetching YAML from {url}: {error}")
@@ -311,8 +321,15 @@ class handler(BaseHTTPRequestHandler):
             self.send_response(200)
             # self.send_header('Content-type', 'application/yaml')
             self.send_header('Content-type', 'text/plain;charset=utf-8')
-            # 流量信息标头
-            self.send_header('Subscription-Userinfo', self.subscription_userinfo)
+            # 原样返回特殊标头
+            if self.subscription_userinfo:
+                self.send_header('Subscription-Userinfo', self.subscription_userinfo)
+            if self.profile_update_interval:
+                self.send_header('Profile-Update-Interval', self.profile_update_interval)
+            if self.content_disposition:
+                self.send_header('Content-Disposition', self.content_disposition)
+            if self.profile_web_page_url:
+                self.send_header('Profile-Web-Page-Url', self.profile_web_page_url)
             self.end_headers()
             # 写入文件
             self.wfile.write(

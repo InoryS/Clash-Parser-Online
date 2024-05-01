@@ -4,8 +4,12 @@ mixin:
     append-system-dns: false
   dns:
     enable: true
-    enhanced-mode: fake-ip #fake-ip 模式
-    fake-ip-range: 198.18.0.1/16  #fake-ip 范围
+    ipv6: true #是否解析 IPV6, 如为 false, 则回应 AAAA 为空解析
+    prefer-h3: true #优先使用 DOH 的 http/3
+    use-hosts: true  #是否查询 hosts
+    listen: 0.0.0.0:1053
+    enhanced-mode: fake-ip   #fake-ip 模式
+    fake-ip-range: 198.18.0.1/16   #fake-ip 范围
     default-nameserver: #用于解析 nameserver 和 fallback 中的域名
       - 119.29.29.29
       - 223.5.5.5
@@ -21,7 +25,8 @@ mixin:
       - 114.114.114.114
       # - '[2402:4e00::]:53' #dnspod
       # - '[2400:3200::1]:53' #ali
-    fallback:                        #fake-ip 模式可不设置，#当存在 `fallback` 时，DNS 服务器将并发请求发送到此部分中的服务器以及 `nameservers` 中的服务器。 当 GEOIP 国家不是 `CN` 时，使用 fallback 服务器的答案
+    fallback:                        #fake-ip 模式可不设置，#当存在 `fallback` 时，DNS 服务器将并发请求发送到此部分中的服务器以及 `nameservers` 中的服务器。根据 fallback-filter 来觉得使用什么结果。
+      #如果你出现部分走 DIRECT 的域名无法解析，特别是国外域名，那很可能是因为 fallback 中的 DNS 没有走代理而且被运营商屏蔽，导致无法解析，考虑使用 meta 核心指定 fallback 中的 dns 走代理
       - https://8.8.8.8/dns-query
       #- https://8.8.4.4/dns-query
       #- https://1.1.1.1/dns-query
@@ -31,7 +36,7 @@ mixin:
       #- tls://8.8.8.8:853
       - tls://8.8.4.4:854
       - https://doh.dns.sb/dns-query
-      #- 'tls://dns.google#🚀 节点选择'  #meta 可以使用此格式让指定 dns 通过节点解析，注意引号
+      #- 'tls://dns.google#🚀 节点选择'  #meta 可以使用此格式让指定 dns 通过代理解析，注意必须引号
       
     proxy-server-nameserver:   #代理节点域名解析服务器，仅用于解析代理节点的域名
       - https://1.12.12.12/dns-query #dnspod

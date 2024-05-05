@@ -1,4 +1,9 @@
-mixin:
+mixin:       #这只是个示例，根据你的需要调整，此文件需要使用 meta 专属功能
+  geodata-mode: true
+  geox-url:
+    geoip: "https://mirror.ghproxy.com/https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.dat"
+    geosite: "https://mirror.ghproxy.com/https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat"
+    mmdb: "https://mirror.ghproxy.com/https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/country-lite.mmdb"
   allow-lan: false
   clash-for-android:
     append-system-dns: false
@@ -18,7 +23,7 @@ mixin:
       - '[2400:3200::1]:53' #ali
     nameserver: #fake-ip 模式此处仅用作规则判定，没加密的也行, redir 模式必须为加密的境外DNS，DNS不是越多越好，多了反而可能影响解析效率，一般 2-3 个即可；
       #不在分流内的域名由于会匹配到倒数第二个规则，需要判断是否符合 GeoIP CN 分流，所以必定会向这里的 DNS 发起请求，导致 DNS 泄露，要么你把这里的 DNS 都换成加密的，要么不用 GeoIP。
-      #所以其实无所谓，因为分流内的域名是不会泄露的，这些实际上只用作规则判断，最终结果实际上还是发往节点解析
+      #所以其实无所谓，因为分流内的域名是不会泄露的，这些实际上只用作规则判断，最终结果实际上还是发往节点解析，下方的 nameserver-policy 能加强避免所谓 DNS 泄露
       - https://1.12.12.12/dns-query #dnspod
       - https://223.5.5.5/dns-query #ali
       - 119.29.29.29
@@ -27,36 +32,39 @@ mixin:
       # - '[2400:3200::1]:53' #ali
     fallback:                        #fake-ip 模式可不设置，#当存在 `fallback` 时，DNS 服务器将并发请求发送到此部分中的服务器以及 `nameservers` 中的服务器。根据 fallback-filter 来觉得使用什么结果。
       #如果你出现部分走 DIRECT 的域名无法解析，特别是国外域名，那很可能是因为 fallback 中的 DNS 没有走代理而且被运营商屏蔽，导致无法解析，考虑使用 meta 核心指定 fallback 中的 dns 走代理
-      - https://8.8.8.8/dns-query
-      #- https://8.8.4.4/dns-query
-      #- https://1.1.1.1/dns-query
-      #- https://1.0.0.1/dns-query
-      - tls://1.1.1.1:853
-      #- tls://1.0.0.1:853
-      #- tls://8.8.8.8:853
-      - tls://8.8.4.4:854
-      - https://doh.dns.sb/dns-query
-      #- 'tls://dns.google#🚀 节点选择'  #meta 可以使用此格式让指定 dns 通过代理解析，注意必须引号
-      
+      - 'https://8.8.8.8/dns-query#🚀 节点选择' #meta 可以使用此格式让指定 dns 通过节点解析，注意必须引号
+      #- 'https://8.8.4.4/dns-query#🚀 节点选择'
+      #- 'https://1.1.1.1/dns-query#🚀 节点选择'
+      #- 'https://1.0.0.1/dns-query#🚀 节点选择'
+      - 'tls://1.1.1.1:853#🚀 节点选择'
+      #- 'tls://1.0.0.1:853#🚀 节点选择'
+      #- 'tls://8.8.8.8:853#🚀 节点选择'
+      #- 'tls://8.8.4.4:853#🚀 节点选择'
+      #- 'tls://dns.google:853#🚀 节点选择'
+      - 'https://doh.dns.sb/dns-query#🚀 节点选择'
+    nameserver-policy:     #meta 可以指定域名、geosite、geolocation、rule-set 等使用自定义 DNS 解析，新 meta 默认使用的 geosite 为 https://github.com/MetaCubeX/meta-rules-dat
+      geosite:private,apple:
+      - https://1.12.12.12/dns-query
+      - https://120.53.53.53/dns-query
+      - https://223.5.5.5/dns-query
+      geosite:gxw:
+      - 'https://8.8.8.8/dns-query#🚀 节点选择'
+      - 'tls://1.1.1.1:853#🚀 节点选择'
+      - 'https://doh.dns.sb/dns-query#🚀 节点选择'
+      geosite:geolocation-!cn:
+      - 'https://8.8.8.8/dns-query#🚀 节点选择'
+      - 'tls://1.1.1.1:853#🚀 节点选择'
+      - 'https://doh.dns.sb/dns-query#🚀 节点选择'
     proxy-server-nameserver:   #代理节点域名解析服务器，仅用于解析代理节点的域名
       - https://1.12.12.12/dns-query #dnspod
       - https://120.53.53.53/dns-query #dnspod
       - https://doh.pub/dns-query #dnspod
       - https://223.5.5.5/dns-query #ali
       - https://dns.alidns.com/dns-query #ali
-
-    # nameserver-policy:               #Meta 可以指定域名使用自定义 DNS 解析,默认未使用
-    #   'www.baidu.com': '114.114.114.114'
-    #   '+.internal.crop.com': '10.0.0.1'
-    #   'geosite:geolocation-!cn': [tls://8.8.4.4, https://1.0.0.1/dns-query]
-    #   'www.baidu.com,+.google.cn': https://doh.pub/dns-query
-    #   'geosite:private,apple': https://dns.alidns.com/dns-query
-    #   'rule-set:google,cloudflare': 8.8.8.8
-
     fallback-filter:    #fake-ip 模式可不设置，只作用于 fake-ip filter 列表  # 意思就算满足条件的将使用 fallback
       geoip: true       #为真时，不匹配为 geoip 规则的使用 fallback 返回结果，geoip-code 配置 CN 就是 CN 以外的 IP 使用 fallback 结果
       geoip-code: CN
-      # geosite: # geosite 的内容被视为已污染，仅 meta
+      # geosite: #仅 meta，geosite 的内容被视为已污染，只会向 fallback 发起解析，此功能会在将来弃用，改为使用 nameserver-policy，新 meta 默认使用的 geosite 为 https://github.com/MetaCubeX/meta-rules-dat
       #   - gxw
       ipcidr:             #如果使用 `nameservers` 中的服务器解析的 IP 地址位于下面指定的子网中，则它们被视为无效，然后使用来自 `fallback` 服务器的结果
         - 1.1.1.0/22
@@ -115,8 +123,6 @@ mixin:
         - '+.nikke-kr.com'
         - '+.fleetlogd.com'
         - '+.intlgame.com'
-    
-    
     fake-ip-filter:  #需要真实 IP 的域名，用于 fake-ip 模式
       - '*.lan'
       - '*.linksys.com'

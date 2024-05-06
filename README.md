@@ -249,7 +249,7 @@ https://clash-parser-online-vercel.vercel.app/api?source=aHR0cDovL2xvY2FsaG9zdDo
 <br>
 
 - 当 `source=幻数` 时，会从本地 `source.txt` 中读取连接。
-- 当不传递 `parser` 时，`parsr.yaml` 会从本地读取 parser 内容。
+- 当不传递 `parser` 参数时，会从本地 `parsr.yaml` 读取 parser 内容。
 - 当 `mixin=幻数` 时，会从本地 `mixin.yaml` 中读取 mixin 内容。
 - 额外的，mixin 有两个预设幻数，幻数 `jynb` 对应 `mixin.yaml`，幻数 `jynb-premium` 对应 `mixin-premium.yaml`
 
@@ -265,3 +265,8 @@ https://example.com/?source=jynb&mixin=jynb
 ```
 https://clash-parser-online-vercel.vercel.app/api?source=jynb&mixin=jynb
 ```
+
+
+
+
+

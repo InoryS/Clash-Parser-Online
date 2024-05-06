@@ -55,7 +55,10 @@ class handler(BaseHTTPRequestHandler):
         # 应用 mixin
         for key, value in mixin.get('mixin', {}).items():
             if key in source:
-                source[key].update(value)
+                if isinstance(source[key], dict) and isinstance(value, dict):
+                    source[key].update(value)
+                else:
+                    source[key] = value
             else:
                 source[key] = value
         return source

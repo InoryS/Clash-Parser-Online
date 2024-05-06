@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# Author: InoryS
+# Git repository: https://github.com/InoryS/Clash-Parser-Online
+# Vesion: 2024-05-06.01
+
 import base64
 import re
 import urllib

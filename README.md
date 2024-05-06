@@ -4,67 +4,78 @@
 
 # English
 
-This is an online implementation of the configuration file preprocessing (parser) and mixin tool, based on the features of Clash For Windows (CFW).
+This is an online configuration file preprocessor (parser) and mixin tool, based on Clash For Windows (CFW).
 
-Even if CFW is no longer updated, you can continue to use their parser and mixin features online without being limited to any specific implementation.
+Even if CFW is no longer updated, you can continue using its parser and mixin features online through this tool without being constrained by certain implementations.
 
 ## Disclaimer
 
-This tool is only used for modifying YAML configuration files and is merely a plain text file editing tool. It does not contain any content that violates the laws and regulations of any country.
+This tool is only intended for modifying YAML configuration files. It is merely a plain text file modification tool. It does not contain any content that violates any national laws or regulations.
 
-## warn
+## Warning
 
-It is not recommended to use this service built by others. Your query parameters are likely to be recorded, thus revealing your subscription.
+It's not recommended to use this service set up by others, as your query parameters are likely to be recorded, potentially revealing your subscription information.
 
-Although it doesn't happen by default, it only takes 2 lines of code to change.
+Although it's not enabled by default, it can be done with just one line of code.
+
+<br>
+
+Additionally, this program has preset magic numbers that might allow others to use your subscription.
+
+Please search for `jynb` in the main program and change the magic number to another value.
 
 ## Features
 
 - Supports preprocessing of YAML configuration files.
-- Implements basic parser and mixin features. (For functionality, please refer to the CFW documentation)
-- Advanced features may not be fully implemented; please refer to the examples in this project.
+- Implements basic parser and mixin functionalities (refer to CFW documentation for details).
+- Advanced features might not be fully implemented. Please refer to the examples in this project.
 
 ## Typical Use Cases
 
-1. Convert from a subscription to get a subscription link, specifying your favorite rule set.
-2. The rule set lacks certain rules or some rules are inappropriate.
-3. Use the parser feature to add elements like nodes, rules, node groups, etc., to the configuration file.
-4. Use the mixin feature to override parts of the configuration file, such as overriding enhanced-mode: fake-ip.
-5. Obtain a satisfactory configuration file subscription link.
+1. Obtain subscription links from the subscription conversion and specify the rule set you like.
+2. The rule set lacks certain rules or some are not suitable.
+3. Use the parser feature to add nodes, rules, node groups, etc., to the configuration file.
+4. Use the mixin feature to override parts of the configuration file, like `enhanced-mode: fake-ip`.
+5. Get a satisfactory configuration file subscription link.
 
 ——————
 
-1. Multiple device usage, frequently changing subscriptions.
-2. Use the magic number feature, all devices use the same link.
-3. The initial design intention was to require a parser, so you need to place a valid parser.yaml.
-4. When updating subscriptions, only update the subscription link in the source.txt on the server.
-5. All devices can update their subscriptions accordingly.
+1. Use across multiple devices, frequently changing subscriptions.
+2. Use the magic number feature so that all devices use the same link.
+3. Since it was designed to have a parser, you need to place a valid `parser.yaml`.
+4. When updating the subscription, you only need to update the subscription link in `source.txt` on the server.
+5. All devices will just need to update the subscription.
 
-## Processing Workflow
+## Processing Flow
 
-1. Obtain the subscription link from local or query parameters (Clash format).
-2. Obtain parser.yaml from local or query parameters.
-3. Obtain mixin.yaml from local or query parameters.
-4. Download the subscription from the link and use mixin.yaml to override its content.
-5. Use parser.yaml to preprocess it.
-6. Return the configuration file in Clash format.
+1. Get the subscription link (in Clash format) from local or query parameters.
+2. Get `parser.yaml` from local or query parameters.
+3. Get `mixin.yaml` from local or query parameters.
+4. Download the subscription via the link and use `mixin.yaml` to override its content.
+5. Preprocess it with `parser.yaml`.
+6. Return the Clash-format configuration file.
+
+## Deployment Instructions
+
+#### Server Deployment
+
+For deployment on a server, simply start it directly:
+
+```
+python3 parser.py
+```
+
+Then use NGINX or other reverse proxies for TLS encryption and port changes.
+
+#### Serverless Deployment
+
+You can easily deploy this application on a serverless platform like Vercel.
+
+For Vercel deployment, refer to this repository: https://github.com/InoryS/Clash-Parser-Online-Vercel
 
 ## Usage Instructions
 
-### Quick Deployment
-
-Deploy directly on the server and start with:
-
-`
-python3 parser.py
-`
-
-
-Then use NGINX or similar reverse proxy for SSL and port modification.
-
-You can also easily deploy this application on serverless platforms like Vercel.
-
-After deployment, send requests by constructing the following URL:
+After deployment, send requests by constructing the following URLs:
 
 ```
 https://your.domain/?source=<base64-encoded-subscription-url>&parser=<base64-encoded-parser.yaml-url>&mixin=<base64-encoded-mixin.yaml-url>
@@ -72,28 +83,44 @@ https://your.domain/?source=<base64-encoded-subscription-url>&parser=<base64-enc
 
 ### Parameter Explanation
 
-- `source`: Base64 encoded subscription link (Clash format)
-- `parser`: Base64 encoded `parser.yaml` download link, with the same format as CFW's parser, content as per the example files in this project.
-- `mixin`: Base64 encoded `mixin.yaml` download link, with the same format as CFW's mixin, this parameter is optional, content as per the example files in this project.
+- `source`: Base64 encoded subscription link (Clash format).
+- `parser`: Base64 encoded `parser.yaml` download link, same format as the CFW parser. This parameter is optional; if not provided, it will read locally. Refer to the project sample files and CFW documentation.
+- `mixin`: Base64 encoded `mixin.yaml` download link, same format as the CFW mixin. This parameter is optional. Refer to the project sample files and CFW documentation.
 
-For example:
-
+Example requests:
 ```
 https://example.com/?source=aHR0cDovL2xvY2FsaG9zdDoyNTUwMC9zdWI/dGFyZ2V0PWNsYXNoJm5ld19uYW1lPXRydWUmdXJsPXRlc3QmaW5zZXJ0PWZhbHNlJmNvbmZpZz1odHRwcyUzQSUyRiUyRnJhdy5naXRodWJ1c2VyY29udGVudC5jb20lMkZBQ0w0U1NSJTJGQUNMNFNTUiUyRm1hc3RlciUyRkNsYXNoJTJGY29uZmlnJTJGQUNMNFNTUl9PbmxpbmUuaW5p&parser=aHR0cHM6Ly9leGFtcGxlLmNvbS9wYXJzZXIueWFtbA==&mixin=aHR0cHM6Ly9leGFtcGxlLmNvbS9taXhpbi55YW1s
 ```
 
+```
+https://clash-parser-online-vercel.vercel.app/api?source=aHR0cDovL2xvY2FsaG9zdDoyNTUwMC9zdWI/dGFyZ2V0PWNsYXNoJm5ld19uYW1lPXRydWUmdXJsPXRlc3QmaW5zZXJ0PWZhbHNlJmNvbmZpZz1odHRwcyUzQSUyRiUyRnJhdy5naXRodWJ1c2VyY29udGVudC5jb20lMkZBQ0w0U1NSJTJGQUNMNFNTUiUyRm1hc3RlciUyRkNsYXNoJTJGY29uZmlnJTJGQUNMNFNTUl9PbmxpbmUuaW5p&parser=aHR0cHM6Ly9leGFtcGxlLmNvbS9wYXJzZXIueWFtbA==&mixin=aHR0cHM6Ly9leGFtcGxlLmNvbS9taXhpbi55YW1s
+```
 
-### personal use
+### Personal Use
 
-For personal use, if you are too lazy to pass parameters, you can use a preset magic number (defaults to 'jynb') to automatically read the configuration from a local file:
+For personal use, if you're too lazy to pass parameters, you can use the preset magic number (default is 'jynb') to automatically read the configuration from local files:
 
-- Create `source.txt` and `mixin.yaml` in the same directory or the upper directory of `parser.py`.
-- The first line of `source.txt` should write the subscription link, and the second line should write the encoding type of the subscription link (raw, url_encode or base64).
+- To read files locally, you need to create `source.txt`, `parser.yaml`, `mixin.yaml`, and `mixin-premium.yaml` in the same directory or parent directory as `parser.py`.
+- The first line of `source.txt` should contain the subscription link, and the second line should specify the encoding type (raw, url_encode, or base64).
+- The format of `parser.yaml`, `mixin.yaml`, and `mixin-premium.yaml` follows the examples in this repository and the CFW documentation.
+- This program has preset magic numbers, please read the personal use section
 
-For example:
+<br>
 
+- If `source=magic number`, it reads the link from the local `source.txt`.
+- If no `parser` is passed, `parser.yaml` reads the parser content locally.
+- If `mixin=magic number`, it reads the mixin content from the local `mixin.yaml`.
+- Additionally, mixin has two preset magic numbers: `jynb` corresponds to `mixin.yaml`, and `jynb-premium` corresponds to `mixin-premium.yaml`.
+
+It's advisable to search for `jynb` in the main program and change the magic number to another value.
+
+Example requests:
 ```
 https://example.com/?source=jynb&mixin=jynb
+```
+
+```
+https://clash-parser-online-vercel.vercel.app/api?source=jynb&mixin=jynb
 ```
 
 
@@ -124,7 +151,13 @@ https://example.com/?source=jynb&mixin=jynb
 
 不建议使用别人搭建的此服务，你的查询参数很可能会被记录，从而泄露你的订阅。
 
-虽然默认不会，但要改也就 2 行代码的事。
+虽然默认不会，但要改也就 1 行代码的事。
+
+<br>
+
+此外，本程序有预设幻数，可能导致其他人使用你的订阅。
+
+请在主程序中搜索 `jynb` 修改幻数为其他值。 
 
 ## 功能特性
 
@@ -157,21 +190,29 @@ https://example.com/?source=jynb&mixin=jynb
 5. 使用 parser.yaml 对其进行预处理
 6. 返回 clash 格式配置文件
 
-## 使用说明
 
-### 快速部署
 
-部署在服务器上直接启动即可
+## 部署说明
+
+#### 服务器部署
+
+部署在服务器上直接启动即可：
 
 ```
 python3 parser.py
 ```
 
-然后使用 NGINX 等反向代理进行 SSL，修改端口等。
+然后使用 NGINX 等反向代理进行 TLS 加密，修改端口等。
 
-
+#### 无服务器部署
 
 你也可以轻松地在如 Vercel 这样的无服务器平台上部署此应用。
+
+在 Vercel 上部署请参考此仓库：https://github.com/InoryS/Clash-Parser-Online-Vercel
+
+
+
+## 使用说明
 
 部署后，通过构造以下 URL 发送请求：
 
@@ -182,26 +223,45 @@ https://your.domain/?source=<base64-encoded-subscription-url>&parser=<base64-enc
 ### 参数说明
 
 - `source`: base64 编码后的订阅链接（Clash 格式）
-- `parser`: base64 编码后的 `parser.yaml` 下载链接，格式与 CFW 的 parser 相同，内容可参考本项目示例文件
-- `mixin`: base64 编码后的 `mixin.yaml` 下载链接，格式与 CFW 的 mixin 相同，此参数是可选的，内容可参考本项目示例文件
+- `parser`: base64 编码后的 `parser.yaml` 下载链接，格式与 CFW 的 parser 相同，此参数是可选的，如果不填默认从本地读取，内容可参考本项目示例文件以及 CFW 文档
+- `mixin`: base64 编码后的 `mixin.yaml` 下载链接，格式与 CFW 的 mixin 相同，此参数是可选的，内容可参考本项目示例文件以及 CFW 文档
+- 本程序有预设幻数，请阅读个人使用部分
 
-例如：
+请求例如：
 
 ```
 https://example.com/?source=aHR0cDovL2xvY2FsaG9zdDoyNTUwMC9zdWI/dGFyZ2V0PWNsYXNoJm5ld19uYW1lPXRydWUmdXJsPXRlc3QmaW5zZXJ0PWZhbHNlJmNvbmZpZz1odHRwcyUzQSUyRiUyRnJhdy5naXRodWJ1c2VyY29udGVudC5jb20lMkZBQ0w0U1NSJTJGQUNMNFNTUiUyRm1hc3RlciUyRkNsYXNoJTJGY29uZmlnJTJGQUNMNFNTUl9PbmxpbmUuaW5p&parser=aHR0cHM6Ly9leGFtcGxlLmNvbS9wYXJzZXIueWFtbA==&mixin=aHR0cHM6Ly9leGFtcGxlLmNvbS9taXhpbi55YW1s
 ```
 
+```
+https://clash-parser-online-vercel.vercel.app/api?source=aHR0cDovL2xvY2FsaG9zdDoyNTUwMC9zdWI/dGFyZ2V0PWNsYXNoJm5ld19uYW1lPXRydWUmdXJsPXRlc3QmaW5zZXJ0PWZhbHNlJmNvbmZpZz1odHRwcyUzQSUyRiUyRnJhdy5naXRodWJ1c2VyY29udGVudC5jb20lMkZBQ0w0U1NSJTJGQUNMNFNTUiUyRm1hc3RlciUyRkNsYXNoJTJGY29uZmlnJTJGQUNMNFNTUl9PbmxpbmUuaW5p&parser=aHR0cHM6Ly9leGFtcGxlLmNvbS9wYXJzZXIueWFtbA==&mixin=aHR0cHM6Ly9leGFtcGxlLmNvbS9taXhpbi55YW1s
+```
+
+
 ### 个人使用
 
 对于个人使用，如果懒得传递参数，可以使用预设的幻数（默认为 'jynb'）从本地文件自动读取配置：
 
-- 在 `parser.py` 的同目录或上层目录创建 `source.txt` 和 `mixin.yaml`。
+- 要从本地读取文件，你需要在 `parser.py` 的同目录或上层目录创建 `source.txt` 和 `parser.yaml` 和 `mixin.yaml` 以及 `mixin-premium.yaml`。
 - `source.txt` 的第一行应写入订阅链接，第二行写订阅链接的编码类型（raw、url_encode 或 base64）。
+- `parser.yaml` 和 `mixin.yaml` 以及 `mixin-premium.yaml` 文件格式参考本仓库示例以及 CFW 文档。
 
-例如：
+<br>
+
+- 当 `source=幻数` 时，会从本地 `source.txt` 中读取连接。
+- 当不传递 `parser` 时，`parsr.yaml` 会从本地读取 parser 内容。
+- 当 `mixin=幻数` 时，会从本地 `mixin.yaml` 中读取 mixin 内容。
+- 额外的，mixin 有两个预设幻数，幻数 `jynb` 对应 `mixin.yaml`，幻数 `jynb-premium` 对应 `mixin-premium.yaml`
+
+
+建议在主程序中搜索 `jynb` 修改幻数为其他值。 
+
+请求例如：
 
 ```
 https://example.com/?source=jynb&mixin=jynb
 ```
 
-
+```
+https://clash-parser-online-vercel.vercel.app/api?source=jynb&mixin=jynb
+```

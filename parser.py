@@ -269,7 +269,6 @@ class handler(BaseHTTPRequestHandler):
         query_components = self.parse_query_parameters(self.path)
         try:
             source = query_components.get('source', [''])[0]
-            print(source)
             if source == 'jynb':  # 幻数从本地获取
                 source_url = self.fetch_local_url('source.txt')
                 source_yaml = self.fetch_yaml(source_url, 'source')

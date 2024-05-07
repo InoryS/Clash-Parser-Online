@@ -26,9 +26,8 @@ Please search for `jynb` in the main program and change the magic number to anot
 
 ## Features
 
-- Supports preprocessing of YAML configuration files.
-- Implements basic parser and mixin functionalities (refer to CFW documentation for details).
-- Advanced features might not be fully implemented. Please refer to the examples in this project.
+- Implement basic CFW Parser and Mixin functions. (YAML method only, please refer to CFW documentation for functions)
+- The advanced command function may not be fully implemented. If it has been implemented, please refer to the example in the project (although it is still not a complete example).
 
 ## Typical Use Cases
 
@@ -84,7 +83,7 @@ https://your.domain/?source=<base64-encoded-subscription-url>&parser=<base64-enc
 ### Parameter Explanation
 
 - `source`: Base64 encoded subscription link (Clash format).
-- `parser`: Base64 encoded `parser.yaml` download link, same format as the CFW parser. This parameter is optional; if not provided, it will read locally. Refer to the project sample files and CFW documentation.
+- `parser`: Base64 encoded `parser.yaml` download link. The basic format is the same as CFW's parser but the `parsers:` header needs to be removed and starts directly with `yaml:`. This parameter is optional. If not By default, it is read from local. For content, please refer to the sample files of this project and CFW documents.
 - `mixin`: Base64 encoded `mixin.yaml` download link, same format as the CFW mixin. This parameter is optional. Refer to the project sample files and CFW documentation.
 
 Example requests:
@@ -161,9 +160,8 @@ https://clash-parser-online-vercel.vercel.app/api?source=jynb&mixin=jynb
 
 ## 功能特性
 
-- 支持 YAML 配置文件的预处理。
-- 实现基本的 Parser 和 Mixin 功能。（功能请参考 CFW 文档）
-- 高级功能可能实现不全，已实现请参考项目中的示例（虽然还是不全）。
+- 实现基本 CFW 的 Parser 和 Mixin 功能。（仅限 YAML 方法，功能请参考 CFW 文档）
+- 高级 command 功能可能实现不全，已实现请参考项目中的示例（虽然还是不是完整示例）。
 
 ## 典型使用场景
 
@@ -223,7 +221,7 @@ https://your.domain/?source=<base64-encoded-subscription-url>&parser=<base64-enc
 ### 参数说明
 
 - `source`: base64 编码后的订阅链接（Clash 格式）
-- `parser`: base64 编码后的 `parser.yaml` 下载链接，格式与 CFW 的 parser 相同，此参数是可选的，如果不填默认从本地读取，内容可参考本项目示例文件以及 CFW 文档
+- `parser`: base64 编码后的 `parser.yaml` 下载链接，基本格式与 CFW 的 parser 相同但要去掉 `parsers:` 头，直接以 `yaml:` 开头，此参数是可选的，如果不填默认从本地读取，内容可参考本项目示例文件以及 CFW 文档
 - `mixin`: base64 编码后的 `mixin.yaml` 下载链接，格式与 CFW 的 mixin 相同，此参数是可选的，内容可参考本项目示例文件以及 CFW 文档
 - 本程序有预设幻数，请阅读个人使用部分
 

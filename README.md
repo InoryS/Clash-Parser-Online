@@ -64,6 +64,8 @@ For deployment on a server, simply start it directly:
 python3 parser.py
 ```
 
+Default listening `127.0.0.1:8000`
+
 Then use NGINX or other reverse proxies for TLS encryption and port changes.
 
 #### Serverless Deployment
@@ -199,6 +201,8 @@ https://clash-parser-online-vercel.vercel.app/api?source=jynb&mixin=jynb
 ```
 python3 parser.py
 ```
+
+默认监听 `127.0.0.1:8000`
 
 然后使用 NGINX 等反向代理进行 TLS 加密，修改端口等。
 

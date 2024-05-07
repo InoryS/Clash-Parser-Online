@@ -1,199 +1,218 @@
-yaml:
-    append-proxy-groups: # 添加自定义策略组
-        - name: 🇪🇺 欧盟节点
-          type: select
-          url: https://www.gstatic.com/generate_204
-          interval: 300
-          proxies:
-            - 🚀 节点选择
-            - DIRECT
-        - name: 🚰 大流量
-          type: select
-          url: https://www.gstatic.com/generate_204
-          interval: 300
-          proxies:
-            - DIRECT
-          use:
-            - hightraffic
-    mix-proxy-providers:  #添加自定义规则组
-        hightraffic: 
-          type: http 
-          path: ./Proxy/hightraffic.yaml 
-          #大流量的订阅链接，需要是 clash 格式
-          url: http://localhost:25500/sub?target=clash&new_name=true&url=test&insert=false&config=https%3A%2F%2Fraw.githubusercontent.com%2FACL4SSR%2FACL4SSR%2Fmaster%2FClash%2Fconfig%2FACL4SSR_Online.ini
-          interval: 21600 
-          health-check:  
-              enable: true
-              url: https://www.gstatic.com/generate_204
-              interval: 300
-
-    commands:
-      # 向 策略组 内添加节点
-        - proxy-groups.🇪🇺 欧盟节点.proxies=[]proxyNames|^(?=.*(?:奥地利|Austria|🇦🇹|比利时|Belgium|🇧🇪|保加利亚|Bulgaria|🇧🇬|克罗地亚|Croatia|🇭🇷|塞浦路斯|Cyprus|🇨🇾|捷克共和国|Czech Republic|🇨🇿|丹麦|Denmark|🇩🇰|爱沙尼亚|Estonia|🇪🇪|芬兰|Finland|🇫🇮|法国|France|🇫🇷|德国|Germany|🇩🇪|希腊|Greece|🇬🇷|匈牙利|Hungary|🇭🇺|爱尔兰|Ireland|🇮🇪|意大利|Italy|🇮🇹|拉脱维亚|Latvia|🇱🇻|立陶宛|Lithuania|🇱🇹|卢森堡|Luxembourg|🇱🇺|马耳他|Malta|🇲🇹|荷兰|Netherlands|🇳🇱|波兰|Poland|🇵🇱|葡萄牙|Portugal|🇵🇹|罗马尼亚|Romania|🇷🇴|斯洛伐克|Slovakia|🇸🇰|斯洛文尼亚|Slovenia|🇸🇮|西班牙|Spain|🇪🇸|瑞典|Sweden|🇸🇪)).*$
+yaml:    #这只是个示例，根据你的需要修改
+  append-proxies: #添加自定义节点，数组合并至原配置 proxies 数组后
+    - name: test 
+      type: http
+      server: 192.168.1.255
+      port: 1234
+  prepend-proxies: #添加自定义节点，数组合并至原配置 proxies 数组前
+    - name: test1
+      type: http
+      server: 192.168.1.254
+      port: 1234
+  append-proxy-groups: # 添加自定义策略组，数组合并至原配置 proxy-groups 数组后
+    - name: 🇪🇺 欧盟节点
+      type: select
+      url: https://www.gstatic.com/generate_204
+      interval: 300
+      proxies:
+        - 🚀 节点选择
+        - DIRECT
+    - name: 🚰 大流量
+      type: select
+      url: https://www.gstatic.com/generate_204
+      interval: 300
+      proxies:
+        - DIRECT
+      use:
+        - hightraffic
+  mix-proxy-providers:  #添加自定义订阅组，对象合并至原配置 proxy-providers 中
+    hightraffic:
+      type: http
+      path: ./Proxy/hightraffic.yaml
+      #大流量的订阅链接，需要是 clash 格式
+      url: http://localhost:25500/sub?target=clash&new_name=true&url=test&insert=false&config=https%3A%2F%2Fraw.githubusercontent.com%2FACL4SSR%2FACL4SSR%2Fmaster%2FClash%2Fconfig%2FACL4SSR_Online.ini
+      interval: 21600
+      health-check:
+        enable: true
+        url: https://www.gstatic.com/generate_204
+        interval: 300
+  mix-rule-providers: #添加自定义规则组，对象合并至原配置 rule-providers 中
+    Loyalsoldier_reject:
+      type: http
+      behavior: domain
+      url: "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt"
+      path: ./ruleset/Loyalsoldier_reject.yaml
+      interval: 86400
+  commands:  #此功能实现不全
+    # 向 策略组 内添加节点
+    - proxy-groups.🇪🇺 欧盟节点.proxies=[]proxyNames|^(?=.*(?:奥地利|Austria|🇦🇹|比利时|Belgium|🇧🇪|保加利亚|Bulgaria|🇧🇬|克罗地亚|Croatia|🇭🇷|塞浦路斯|Cyprus|🇨🇾|捷克共和国|Czech Republic|🇨🇿|丹麦|Denmark|🇩🇰|爱沙尼亚|Estonia|🇪🇪|芬兰|Finland|🇫🇮|法国|France|🇫🇷|德国|Germany|🇩🇪|希腊|Greece|🇬🇷|匈牙利|Hungary|🇭🇺|爱尔兰|Ireland|🇮🇪|意大利|Italy|🇮🇹|拉脱维亚|Latvia|🇱🇻|立陶宛|Lithuania|🇱🇹|卢森堡|Luxembourg|🇱🇺|马耳他|Malta|🇲🇹|荷兰|Netherlands|🇳🇱|波兰|Poland|🇵🇱|葡萄牙|Portugal|🇵🇹|罗马尼亚|Romania|🇷🇴|斯洛伐克|Slovakia|🇸🇰|斯洛文尼亚|Slovenia|🇸🇮|西班牙|Spain|🇪🇸|瑞典|Sweden|🇸🇪)).*$
     # 向 其他策略组 添加 该策略组
-        - proxy-groups.Ⓜ️ 微软云盘.proxies.0+🚰 大流量 # 向 Ⓜ️ 微软云盘 策略组添加组名🚰大流量  
-    prepend-rules:  #添加自定义规则到当前规则上方，Clash 规则从上往下匹配，匹配到第一个为准，因此相当于覆盖当前规则
-        #把“🚀 节点选择”替换为你的代理分组
-        #STEAM 开始
-        - DOMAIN-SUFFIX,s.team,🚀 节点选择
-        - DOMAIN,fanatical.com,🚀 节点选择
-        - DOMAIN,humblebundle.com,🚀 节点选择
-        - DOMAIN,playartifact.com,🚀 节点选择
-        - DOMAIN-SUFFIX,steam-chat.com,🚀 节点选择
-        - DOMAIN-SUFFIX,steamcommunity.com,🚀 节点选择
-        - DOMAIN-SUFFIX,steamgames.com,🚀 节点选择
-        - DOMAIN-SUFFIX,steamstatic.com,🚀 节点选择
-        - DOMAIN-SUFFIX,steamusercontent.com,🚀 节点选择
-        - DOMAIN-SUFFIX,underlords.com,🚀 节点选择
-        - DOMAIN-SUFFIX,valvesoftware.com,🚀 节点选择
-        - DOMAIN,api.steampowered.com,🚀 节点选择
-        - DOMAIN,store.steampowered.com,🚀 节点选择
-        - DOMAIN-SUFFIX,steamserver.net,DIRECT
-        - DOMAIN,steampowered.com,DIRECT
-        - DOMAIN-SUFFIX,steamcontent.com,DIRECT
-        - DOMAIN,cm.steampowered.com,DIRECT
-        - DOMAIN-SUFFIX,steamchina.com,DIRECT
-        - DOMAIN,csgo.wmsj.cn,DIRECT
-        - DOMAIN,dota2.wmsj.cn,DIRECT
-        - DOMAIN,wmsjsteam.com,DIRECT
-        - DOMAIN,dl.steam.clngaa.com,DIRECT
-        - DOMAIN,dl.steam.ksyna.com,DIRECT
-        - DOMAIN,st.dl.bscstorage.net,DIRECT
-        - DOMAIN,st.dl.eccdnx.com,DIRECT
-        - DOMAIN,st.dl.pinyuncloud.com,DIRECT
-        - DOMAIN,steampipe.steamcontent.tnkjmec.com,DIRECT
-        - DOMAIN,cdn.mileweb.cs.steampowered.com.8686c.com,DIRECT
-        - DOMAIN,cdn-ws.content.steamchina.com,DIRECT
-        - DOMAIN,cdn-qc.content.steamchina.com,DIRECT
-        - DOMAIN,cdn-cdn-ali.content.steamchina.com,DIRECT
-        - DOMAIN,xz.pphimalayanrt.com,DIRECT
-        - DOMAIN,steampowered.com.8686c.com,DIRECT
-        - DOMAIN,steamstatic.com.8686c.com,DIRECT
-        - IP-CIDR,103.10.124.0/24,DIRECT,no-resolve
-        - IP-CIDR,103.10.125.0/24,DIRECT,no-resolve
-        - IP-CIDR,103.28.54.0/23,DIRECT,no-resolve
-        - IP-CIDR,103.28.54.0/24,DIRECT,no-resolve
-        - IP-CIDR,146.66.152.0/24,DIRECT,no-resolve
-        - IP-CIDR,146.66.155.0/24,DIRECT,no-resolve
-        - IP-CIDR,153.254.86.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.224.0/23,DIRECT,no-resolve
-        - IP-CIDR,155.133.226.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.227.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.230.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.232.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.233.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.234.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.238.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.239.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.242.0/23,DIRECT,no-resolve
-        - IP-CIDR,155.133.245.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.246.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.248.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.249.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.250.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.252.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.253.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.254.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.255.0/24,DIRECT,no-resolve
-        - IP-CIDR,162.254.192.0/24,DIRECT,no-resolve
-        - IP-CIDR,162.254.193.0/24,DIRECT,no-resolve
-        - IP-CIDR,162.254.194.0/23,DIRECT,no-resolve
-        - IP-CIDR,162.254.195.0/24,DIRECT,no-resolve
-        - IP-CIDR,162.254.196.0/24,DIRECT,no-resolve
-        - IP-CIDR,162.254.197.0/24,DIRECT,no-resolve
-        - IP-CIDR,162.254.198.0/24,DIRECT,no-resolve
-        - IP-CIDR,162.254.199.0/24,DIRECT,no-resolve
-        - IP-CIDR,185.25.180.0/23,DIRECT,no-resolve
-        - IP-CIDR,185.25.182.0/24,DIRECT,no-resolve
-        - IP-CIDR,185.25.183.0/24,DIRECT,no-resolve
-        - IP-CIDR,190.217.33.0/24,DIRECT,no-resolve
-        - IP-CIDR,192.69.96.0/22,DIRECT,no-resolve
-        - IP-CIDR,205.185.194.0/24,DIRECT,no-resolve
-        - IP-CIDR,205.196.6.0/24,DIRECT,no-resolve
-        - IP-CIDR,208.64.200.0/24,DIRECT,no-resolve
-        - IP-CIDR,208.64.201.0/24,DIRECT,no-resolve
-        - IP-CIDR,208.64.202.0/24,DIRECT,no-resolve
-        - IP-CIDR,208.64.203.0/24,DIRECT,no-resolve
-        - IP-CIDR,208.78.164.0/22,DIRECT,no-resolve
-        - IP-CIDR,45.121.184.0/23,DIRECT,no-resolve
-        - IP-CIDR,103.10.124.0/24,DIRECT,no-resolve
-        - IP-CIDR,103.10.125.0/24,DIRECT,no-resolve
-        - IP-CIDR,103.28.54.0/23,DIRECT,no-resolve
-        - IP-CIDR,103.28.54.0/24,DIRECT,no-resolve
-        - IP-CIDR,146.66.152.0/24,DIRECT,no-resolve
-        - IP-CIDR,146.66.155.0/24,DIRECT,no-resolve
-        - IP-CIDR,153.254.86.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.224.0/23,DIRECT,no-resolve
-        - IP-CIDR,155.133.226.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.227.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.230.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.232.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.233.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.234.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.238.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.239.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.242.0/23,DIRECT,no-resolve
-        - IP-CIDR,155.133.245.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.246.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.248.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.249.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.250.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.252.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.253.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.254.0/24,DIRECT,no-resolve
-        - IP-CIDR,155.133.255.0/24,DIRECT,no-resolve
-        - IP-CIDR,162.254.192.0/24,DIRECT,no-resolve
-        - IP-CIDR,162.254.193.0/24,DIRECT,no-resolve
-        - IP-CIDR,162.254.194.0/23,DIRECT,no-resolve
-        - IP-CIDR,162.254.195.0/24,DIRECT,no-resolve
-        - IP-CIDR,162.254.196.0/24,DIRECT,no-resolve
-        - IP-CIDR,162.254.197.0/24,DIRECT,no-resolve
-        - IP-CIDR,162.254.198.0/24,DIRECT,no-resolve
-        - IP-CIDR,162.254.199.0/24,DIRECT,no-resolve
-        - IP-CIDR,185.25.180.0/23,DIRECT,no-resolve
-        - IP-CIDR,185.25.182.0/24,DIRECT,no-resolve
-        - IP-CIDR,185.25.183.0/24,DIRECT,no-resolve
-        - IP-CIDR,190.217.33.0/24,DIRECT,no-resolve
-        - IP-CIDR,192.69.96.0/22,DIRECT,no-resolve
-        - IP-CIDR,205.185.194.0/24,DIRECT,no-resolve
-        - IP-CIDR,205.196.6.0/24,DIRECT,no-resolve
-        - IP-CIDR,208.64.200.0/24,DIRECT,no-resolve
-        - IP-CIDR,208.64.201.0/24,DIRECT,no-resolve
-        - IP-CIDR,208.64.202.0/24,DIRECT,no-resolve
-        - IP-CIDR,208.64.203.0/24,DIRECT,no-resolve
-        - IP-CIDR,208.78.164.0/22,DIRECT,no-resolve
-        - IP-CIDR,45.121.184.0/23,DIRECT,no-resolve
-        #STEAM 结束
-        #AI开始
-        - DOMAIN,cdn.auth0.com,🇺🇲 美国节点 #openai gpt
-        - DOMAIN-SUFFIX,sentry.io,🇺🇲 美国节点 #openai gpt
-        - DOMAIN-SUFFIX,identrust.com,🇺🇲 美国节点 #openai gpt
-        - DOMAIN-SUFFIX,stripe.com,🇺🇲 美国节点 #openai gpt
-        - DOMAIN-SUFFIX,cdn.oaistatic.com,🇺🇲 美国节点 #openai gp
-        - DOMAIN-SUFFIX,intercom.io,🇺🇲 美国节点 #openai gp
-        - DOMAIN-SUFFIX,intercomcdn.com,🇺🇲 美国节点 #openai gp
-        - DOMAIN-SUFFIX,chat.openai.com,🇺🇲 美国节点 #openai gp
-        - DOMAIN-SUFFIX,openai.com,🇺🇲 美国节点 #openai gpt
-        - DOMAIN-SUFFIX,chatgpt.com,🇺🇲 美国节点 #openai gpt
-        - DOMAIN-SUFFIX,ab.chatgpt.com,🇺🇲 美国节点 #openai gpt
-        - DOMAIN-SUFFIX,ai.com,🇺🇲 美国节点 #openai gpt
-        - DOMAIN-SUFFIX,statsigapi.net,🇺🇲 美国节点 #openai gpt
-        - DOMAIN-SUFFIX,intercom.io,🇺🇲 美国节点 #openai gpt
-        - DOMAIN-SUFFIX,challenges.cloudflare.com,🇺🇲 美国节点 #openai gpt 否则验证过不去
-        - DOMAIN-SUFFIX,openaiapi-site.azureedge.net,🇺🇲 美国节点 #openai gpt
-        - DOMAIN-KEYWORD,i2.wp.com,🇺🇲 美国节点 #openai gpt
-        - DOMAIN-KEYWORD,openai,🇺🇲 美国节点 #openai gpt
-        - DOMAIN,challenges.cloudflare.com,🇺🇲 美国节点 #openai gpt
-        - DOMAIN-SUFFIX,anthropic.com,🇺🇲 美国节点 #anthropic clude
-        - DOMAIN-SUFFIX,claude.ai,🇺🇲 美国节点 #anthropic clude
-        - DOMAIN-SUFFIX,hsforms.com,🇺🇲 美国节点 #anthropic clude
-        - DOMAIN-SUFFIX,hsforms.net,🇺🇲 美国节点 #anthropic clude
-        - DOMAIN-SUFFIX,usefathom.com,🇺🇲 美国节点 #anthropic clude
-        - DOMAIN-KEYWORD,claude,🇺🇲 美国节点 #anthropic clude
-        - DOMAIN,bard.google.com,🇺🇲 美国节点 #google bard gemini
-        - DOMAIN,gemini.google.com,🇺🇲 美国节点 #google bard gemini
-        - DOMAIN,apis.google.com,🇺🇲 美国节点 #google bard gemini
-        - DOMAIN,ogs.google.com,🇺🇲 美国节点 #google bard gemini
-        - DOMAIN-SUFFIX,grazie.ai,🇺🇲 美国节点 #JetBrains AI grazie
-        - DOMAIN-SUFFIX,.ai,🇺🇲 美国节点 #ALL .ai
-        #AI结束
+    - proxy-groups.Ⓜ️ 微软云盘.proxies.0+🚰 大流量 # 向 Ⓜ️ 微软云盘 策略组添加组名🚰大流量  
+  prepend-rules:  #添加自定义规则到当前规则上方，Clash 规则从上往下匹配，匹配到第一个为准，因此相当于覆盖当前规则，数组合并至原配置 rules 数组前
+    #把“🚀 节点选择”替换为你的代理分组
+    #rule-providers 开始
+    - RULE-SET,Loyalsoldier_reject,REJECT
+    #rule-providers 结束
+    #STEAM 开始
+    - DOMAIN-SUFFIX,s.team,🚀 节点选择
+    - DOMAIN,fanatical.com,🚀 节点选择
+    - DOMAIN,humblebundle.com,🚀 节点选择
+    - DOMAIN,playartifact.com,🚀 节点选择
+    - DOMAIN-SUFFIX,steam-chat.com,🚀 节点选择
+    - DOMAIN-SUFFIX,steamcommunity.com,🚀 节点选择
+    - DOMAIN-SUFFIX,steamgames.com,🚀 节点选择
+    - DOMAIN-SUFFIX,steamstatic.com,🚀 节点选择
+    - DOMAIN-SUFFIX,steamusercontent.com,🚀 节点选择
+    - DOMAIN-SUFFIX,underlords.com,🚀 节点选择
+    - DOMAIN-SUFFIX,valvesoftware.com,🚀 节点选择
+    - DOMAIN,api.steampowered.com,🚀 节点选择
+    - DOMAIN,store.steampowered.com,🚀 节点选择
+    - DOMAIN-SUFFIX,steamserver.net,DIRECT
+    - DOMAIN,steampowered.com,DIRECT
+    - DOMAIN-SUFFIX,steamcontent.com,DIRECT
+    - DOMAIN,cm.steampowered.com,DIRECT
+    - DOMAIN-SUFFIX,steamchina.com,DIRECT
+    - DOMAIN,csgo.wmsj.cn,DIRECT
+    - DOMAIN,dota2.wmsj.cn,DIRECT
+    - DOMAIN,wmsjsteam.com,DIRECT
+    - DOMAIN,dl.steam.clngaa.com,DIRECT
+    - DOMAIN,dl.steam.ksyna.com,DIRECT
+    - DOMAIN,st.dl.bscstorage.net,DIRECT
+    - DOMAIN,st.dl.eccdnx.com,DIRECT
+    - DOMAIN,st.dl.pinyuncloud.com,DIRECT
+    - DOMAIN,steampipe.steamcontent.tnkjmec.com,DIRECT
+    - DOMAIN,cdn.mileweb.cs.steampowered.com.8686c.com,DIRECT
+    - DOMAIN,cdn-ws.content.steamchina.com,DIRECT
+    - DOMAIN,cdn-qc.content.steamchina.com,DIRECT
+    - DOMAIN,cdn-cdn-ali.content.steamchina.com,DIRECT
+    - DOMAIN,xz.pphimalayanrt.com,DIRECT
+    - DOMAIN,steampowered.com.8686c.com,DIRECT
+    - DOMAIN,steamstatic.com.8686c.com,DIRECT
+    - IP-CIDR,103.10.124.0/24,DIRECT,no-resolve
+    - IP-CIDR,103.10.125.0/24,DIRECT,no-resolve
+    - IP-CIDR,103.28.54.0/23,DIRECT,no-resolve
+    - IP-CIDR,103.28.54.0/24,DIRECT,no-resolve
+    - IP-CIDR,146.66.152.0/24,DIRECT,no-resolve
+    - IP-CIDR,146.66.155.0/24,DIRECT,no-resolve
+    - IP-CIDR,153.254.86.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.224.0/23,DIRECT,no-resolve
+    - IP-CIDR,155.133.226.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.227.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.230.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.232.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.233.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.234.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.238.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.239.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.242.0/23,DIRECT,no-resolve
+    - IP-CIDR,155.133.245.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.246.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.248.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.249.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.250.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.252.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.253.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.254.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.255.0/24,DIRECT,no-resolve
+    - IP-CIDR,162.254.192.0/24,DIRECT,no-resolve
+    - IP-CIDR,162.254.193.0/24,DIRECT,no-resolve
+    - IP-CIDR,162.254.194.0/23,DIRECT,no-resolve
+    - IP-CIDR,162.254.195.0/24,DIRECT,no-resolve
+    - IP-CIDR,162.254.196.0/24,DIRECT,no-resolve
+    - IP-CIDR,162.254.197.0/24,DIRECT,no-resolve
+    - IP-CIDR,162.254.198.0/24,DIRECT,no-resolve
+    - IP-CIDR,162.254.199.0/24,DIRECT,no-resolve
+    - IP-CIDR,185.25.180.0/23,DIRECT,no-resolve
+    - IP-CIDR,185.25.182.0/24,DIRECT,no-resolve
+    - IP-CIDR,185.25.183.0/24,DIRECT,no-resolve
+    - IP-CIDR,190.217.33.0/24,DIRECT,no-resolve
+    - IP-CIDR,192.69.96.0/22,DIRECT,no-resolve
+    - IP-CIDR,205.185.194.0/24,DIRECT,no-resolve
+    - IP-CIDR,205.196.6.0/24,DIRECT,no-resolve
+    - IP-CIDR,208.64.200.0/24,DIRECT,no-resolve
+    - IP-CIDR,208.64.201.0/24,DIRECT,no-resolve
+    - IP-CIDR,208.64.202.0/24,DIRECT,no-resolve
+    - IP-CIDR,208.64.203.0/24,DIRECT,no-resolve
+    - IP-CIDR,208.78.164.0/22,DIRECT,no-resolve
+    - IP-CIDR,45.121.184.0/23,DIRECT,no-resolve
+    - IP-CIDR,103.10.124.0/24,DIRECT,no-resolve
+    - IP-CIDR,103.10.125.0/24,DIRECT,no-resolve
+    - IP-CIDR,103.28.54.0/23,DIRECT,no-resolve
+    - IP-CIDR,103.28.54.0/24,DIRECT,no-resolve
+    - IP-CIDR,146.66.152.0/24,DIRECT,no-resolve
+    - IP-CIDR,146.66.155.0/24,DIRECT,no-resolve
+    - IP-CIDR,153.254.86.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.224.0/23,DIRECT,no-resolve
+    - IP-CIDR,155.133.226.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.227.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.230.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.232.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.233.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.234.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.238.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.239.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.242.0/23,DIRECT,no-resolve
+    - IP-CIDR,155.133.245.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.246.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.248.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.249.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.250.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.252.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.253.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.254.0/24,DIRECT,no-resolve
+    - IP-CIDR,155.133.255.0/24,DIRECT,no-resolve
+    - IP-CIDR,162.254.192.0/24,DIRECT,no-resolve
+    - IP-CIDR,162.254.193.0/24,DIRECT,no-resolve
+    - IP-CIDR,162.254.194.0/23,DIRECT,no-resolve
+    - IP-CIDR,162.254.195.0/24,DIRECT,no-resolve
+    - IP-CIDR,162.254.196.0/24,DIRECT,no-resolve
+    - IP-CIDR,162.254.197.0/24,DIRECT,no-resolve
+    - IP-CIDR,162.254.198.0/24,DIRECT,no-resolve
+    - IP-CIDR,162.254.199.0/24,DIRECT,no-resolve
+    - IP-CIDR,185.25.180.0/23,DIRECT,no-resolve
+    - IP-CIDR,185.25.182.0/24,DIRECT,no-resolve
+    - IP-CIDR,185.25.183.0/24,DIRECT,no-resolve
+    - IP-CIDR,190.217.33.0/24,DIRECT,no-resolve
+    - IP-CIDR,192.69.96.0/22,DIRECT,no-resolve
+    - IP-CIDR,205.185.194.0/24,DIRECT,no-resolve
+    - IP-CIDR,205.196.6.0/24,DIRECT,no-resolve
+    - IP-CIDR,208.64.200.0/24,DIRECT,no-resolve
+    - IP-CIDR,208.64.201.0/24,DIRECT,no-resolve
+    - IP-CIDR,208.64.202.0/24,DIRECT,no-resolve
+    - IP-CIDR,208.64.203.0/24,DIRECT,no-resolve
+    - IP-CIDR,208.78.164.0/22,DIRECT,no-resolve
+    - IP-CIDR,45.121.184.0/23,DIRECT,no-resolve
+    #STEAM 结束
+    #AI开始
+    - DOMAIN,cdn.auth0.com,🇺🇲 美国节点 #openai gpt
+    - DOMAIN-SUFFIX,sentry.io,🇺🇲 美国节点 #openai gpt
+    - DOMAIN-SUFFIX,identrust.com,🇺🇲 美国节点 #openai gpt
+    - DOMAIN-SUFFIX,stripe.com,🇺🇲 美国节点 #openai gpt
+    - DOMAIN-SUFFIX,cdn.oaistatic.com,🇺🇲 美国节点 #openai gp
+    - DOMAIN-SUFFIX,intercom.io,🇺🇲 美国节点 #openai gp
+    - DOMAIN-SUFFIX,intercomcdn.com,🇺🇲 美国节点 #openai gp
+    - DOMAIN-SUFFIX,chat.openai.com,🇺🇲 美国节点 #openai gp
+    - DOMAIN-SUFFIX,openai.com,🇺🇲 美国节点 #openai gpt
+    - DOMAIN-SUFFIX,chatgpt.com,🇺🇲 美国节点 #openai gpt
+    - DOMAIN-SUFFIX,ab.chatgpt.com,🇺🇲 美国节点 #openai gpt
+    - DOMAIN-SUFFIX,ai.com,🇺🇲 美国节点 #openai gpt
+    - DOMAIN-SUFFIX,statsigapi.net,🇺🇲 美国节点 #openai gpt
+    - DOMAIN-SUFFIX,intercom.io,🇺🇲 美国节点 #openai gpt
+    - DOMAIN-SUFFIX,challenges.cloudflare.com,🇺🇲 美国节点 #openai gpt 否则验证过不去
+    - DOMAIN-SUFFIX,openaiapi-site.azureedge.net,🇺🇲 美国节点 #openai gpt
+    - DOMAIN-KEYWORD,i2.wp.com,🇺🇲 美国节点 #openai gpt
+    - DOMAIN-KEYWORD,openai,🇺🇲 美国节点 #openai gpt
+    - DOMAIN,challenges.cloudflare.com,🇺🇲 美国节点 #openai gpt
+    - DOMAIN-SUFFIX,anthropic.com,🇺🇲 美国节点 #anthropic clude
+    - DOMAIN-SUFFIX,claude.ai,🇺🇲 美国节点 #anthropic clude
+    - DOMAIN-SUFFIX,hsforms.com,🇺🇲 美国节点 #anthropic clude
+    - DOMAIN-SUFFIX,hsforms.net,🇺🇲 美国节点 #anthropic clude
+    - DOMAIN-SUFFIX,usefathom.com,🇺🇲 美国节点 #anthropic clude
+    - DOMAIN-KEYWORD,claude,🇺🇲 美国节点 #anthropic clude
+    - DOMAIN,bard.google.com,🇺🇲 美国节点 #google bard gemini
+    - DOMAIN,gemini.google.com,🇺🇲 美国节点 #google bard gemini
+    - DOMAIN,apis.google.com,🇺🇲 美国节点 #google bard gemini
+    - DOMAIN,ogs.google.com,🇺🇲 美国节点 #google bard gemini
+    - DOMAIN-SUFFIX,grazie.ai,🇺🇲 美国节点 #JetBrains AI grazie
+    - DOMAIN-SUFFIX,.ai,🇺🇲 美国节点 #ALL .ai
+    #AI结束

@@ -23,9 +23,9 @@ mixin:
       - 114.114.114.114
       - '[2402:4e00::]:53' #dnspod
       - '[2400:3200::1]:53' #ali
-    nameserver: #fake-ip 模式此处仅用作规则判定，没加密的也行, redir 模式必须为加密的境外DNS #DNS不是越多越好，多了反而可能影响解析效率，一般2~3个即可；
-      #不在分流内的域名由于会匹配到倒数第二个规则，需要判断是否符合 GeoIP CN 分流，所以必定会向这里的 DNS 发起请求，导致 DNS 泄露，要么你把这里的 DNS 都换成加密的，要么不用 GeoIP
-      #所以其实无所谓，因为分流内的域名是不会泄露的，这些实际上只用作规则判断，最终结果实际上还是发往节点解析，下方的 nameserver-policy 能加强避免所谓 DNS 泄露
+    nameserver: #fake-ip 模式此处仅用作规则判定，没加密的也行, redir 模式必须为加密的境外DNS，DNS不是越多越好，多了反而可能影响解析效率，一般 2-3 个即可；
+      #不在分流内的域名由于会匹配到兜底 GEOIP,CN 规则，需要解析域名判断是否符合 GeoIP CN 分流，所以必定会向这里的 DNS 发起请求，导致所谓 DNS 泄露，要么你把这里的 DNS 都换成加密的，要么不用 GeoIP
+      #所以其实无所谓，因为分流内的域名是不会泄露的，这些实际上只用作规则判断，最终结果实际上还是发往节点解析，下方的 nameserver-policy 能加强避免所谓 DNS 泄露，但也单纯只是 geoip 列表里面有 ipleak.net 而已
       - https://1.12.12.12/dns-query #dnspod
       #- https://120.53.53.53/dns-query #dnspod
       #- https://doh.pub/dns-query #dnspod
@@ -50,7 +50,7 @@ mixin:
       #- 'tls://dns.google:853#🚀 节点选择'
       - 'https://doh.dns.sb/dns-query#🚀 节点选择'
     nameserver-policy:     #Meta 可以指定域名、geosite、geolocation、rule-set 使用自定义 DNS 解析，新 meta 默认使用的 geosite 为 https://github.com/MetaCubeX/meta-rules-dat
-      geosite:private,apple:
+      geosite:private,apple,bilibili:
         - https://1.12.12.12/dns-query
         - https://120.53.53.53/dns-query
         - https://223.5.5.5/dns-query

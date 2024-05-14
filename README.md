@@ -72,6 +72,8 @@ Then use NGINX or other reverse proxies for TLS encryption and port changes.
 
 You can easily deploy this application on a serverless platform like Vercel.
 
+When deploying on a serverless platform, you should pay attention to protecting your source.txt and other files from external access, such as using Vercel's vercel.json to redirect these files to other files.
+
 For Vercel deployment, refer to this repository: https://github.com/InoryS/Clash-Parser-Online-Vercel
 
 ## Usage Instructions
@@ -206,12 +208,15 @@ python3 parser.py
 
 然后使用 NGINX 等反向代理进行 TLS 加密，修改端口等。
 
+你应该注意保护你的 source.txt 等文件不可被外部访问，这些文件可以放在上层目录。
+
 #### 无服务器部署
 
 你也可以轻松地在如 Vercel 这样的无服务器平台上部署此应用。
 
-在 Vercel 上部署请参考此仓库：https://github.com/InoryS/Clash-Parser-Online-Vercel
+在无服务器平台部署时，你应该注意保护你的 source.txt 等文件不可被外部访问，例如使用 Vercel 的 vercel.json 将这些文件重定向到其他文件。
 
+在 Vercel 上部署请参考此仓库：https://github.com/InoryS/Clash-Parser-Online-Vercel
 
 
 ## 使用说明

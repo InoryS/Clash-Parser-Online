@@ -4,7 +4,9 @@
 
 # English
 
-This is an online implementation of Clash For Windows (CFW) configuration file preprocessing (parser) and mixin tools. Please refer to the CFW documentation for what CFW's parser and mixin are.
+This is an online implementation of Clash For Windows (CFW) style configuration file preprocessing (Parser) and Mixin tools. Please refer to the CFW documentation for what the CFW style Parser and Mixin are, or refer to the examples in this repository file.
+
+In other words, you can continue to write configuration file preprocessing in the CFW style, and you can use it in any client.
 
 Even if CFW is no longer updated, you can continue using its parser and mixin features online through this tool without being constrained by certain implementations.
 
@@ -140,7 +142,9 @@ https://clash-parser-online-vercel.vercel.app/api?source=jynb&mixin=jynb
 
 # 简体中文
 
-这是一个在线实现的 Clash For Windows(CFW) 的配置文件预处理 (Parser) 和 Mixin 工具，CFW 的 Parser 和 Mixin 是什么请参考 CFW 文档。
+这是一个在线实现的 Clash For Windows(CFW) 风格的配置文件预处理 (Parser) 和 Mixin 工具，CFW 风格的 Parser 和 Mixin 是什么请参考 CFW 文档，或参考本仓库文件示例。
+
+也就是说，你可以继续以 CFW 风格来编写配置文件预处理，并且可以在任何客户端实现使用。
 
 即使 CFW 不再更新，你也可以通过这个工具在线继续使用它的 Parser 和 Mixin 功能，且不再受限于某某实现。
 

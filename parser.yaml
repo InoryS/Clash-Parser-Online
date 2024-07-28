@@ -48,6 +48,10 @@ yaml:    #这只是个示例，根据你的需要修改
     - proxy-groups.🇪🇺 欧盟节点.proxies=[]proxyNames|^(?=.*(?:奥地利|Austria|🇦🇹|比利时|Belgium|🇧🇪|保加利亚|Bulgaria|🇧🇬|克罗地亚|Croatia|🇭🇷|塞浦路斯|Cyprus|🇨🇾|捷克共和国|Czech Republic|🇨🇿|丹麦|Denmark|🇩🇰|爱沙尼亚|Estonia|🇪🇪|芬兰|Finland|🇫🇮|法国|France|🇫🇷|德国|Germany|🇩🇪|希腊|Greece|🇬🇷|匈牙利|Hungary|🇭🇺|爱尔兰|Ireland|🇮🇪|意大利|Italy|🇮🇹|拉脱维亚|Latvia|🇱🇻|立陶宛|Lithuania|🇱🇹|卢森堡|Luxembourg|🇱🇺|马耳他|Malta|🇲🇹|荷兰|Netherlands|🇳🇱|波兰|Poland|🇵🇱|葡萄牙|Portugal|🇵🇹|罗马尼亚|Romania|🇷🇴|斯洛伐克|Slovakia|🇸🇰|斯洛文尼亚|Slovenia|🇸🇮|西班牙|Spain|🇪🇸|瑞典|Sweden|🇸🇪)).*$
     # 向 其他策略组 添加 该策略组
     - proxy-groups.Ⓜ️ 微软云盘.proxies.0+🚰 大流量 # 向 Ⓜ️ 微软云盘 策略组添加组名🚰大流量  
+    # 删掉 🇺🇲 美国节点 中的 [SS] 🇦🇺 AUS 01
+    - proxy-groups.🇺🇲 美国节点.proxies-[SS] 🇦🇺 AUS 01
+    # 删掉 🇺🇲 美国节点 中的第一个节点
+    - proxy-groups.🇺🇲 美国节点.proxies-0
   prepend-rules:  #添加自定义规则到当前规则上方，Clash 规则从上往下匹配，匹配到第一个为准，因此相当于覆盖当前规则，数组合并至原配置 rules 数组前
     #把“🚀 节点选择”替换为你的代理分组
     #rule-providers 开始

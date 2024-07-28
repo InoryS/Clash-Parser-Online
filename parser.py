@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: InoryS
 # Git repository: https://github.com/InoryS/Clash-Parser-Online
-# Version: 2024-07-28.09
+# Version: 2024-07-28.10
 
 import base64
 import json
@@ -183,25 +183,32 @@ class Handler(BaseHTTPRequestHandler):
     @staticmethod
     def parse_command(command):
         # 解析命令，支持 + = - 三种操作符
-        if '+' in command:
-            parts = command.rpartition('+')
-            operation = '+'
-        elif '=' in command:
-            parts = command.rpartition('=')
-            operation = '='
-        elif '-' in command:
-            parts = command.rpartition('-')
-            operation = '-'
+        operators = ['+', '=', '-']
+        regx_keys = ['proxyNames', 'groupNames', 'shuffledProxyNames']
+
+        # 确定操作符和分割命令
+        operation = next((op for op in operators if op in command), None)
+        if not operation:
+            raise ValueError("Invalid command format")
+
+        # 判断是否包含正则表达式特殊关键字
+        if any(key in command for key in regx_keys):
+            # 如果有正则表达式特殊关键字，使用 split 分割命令为两个部分
+            parts = command.split(operation, 1)
+            if len(parts) != 2:
+                raise ValueError("Invalid command format")
+            path = parts[0].split('.')
+            value = parts[1]
         else:
-            raise ValueError("Invalid command format")
-
-        if len(parts) != 3:
-            raise ValueError("Invalid command format")
-
-        path = parts[0].split('.')
-        value = parts[2]
+            # 对于普通命令，使用 rpartition 分割命令为三个部分
+            parts = command.rpartition(operation)
+            if len(parts) != 3:
+                raise ValueError("Invalid command format")
+            path = parts[0].split('.')
+            value = parts[2]
 
         return path, operation, value
+
 
     @staticmethod
     def decode_raw_url(raw_url):
@@ -361,7 +368,8 @@ class Handler(BaseHTTPRequestHandler):
                 source_yaml = self.fetch_yaml(source_url, 'source')
 
             if not source_yaml:
-                self.send_error(500, "Error in fetching source_yaml: The YAML content could not be retrieved or parsed.")
+                self.send_error(500,
+                                "Error in fetching source_yaml: The YAML content could not be retrieved or parsed.")
                 return
 
             parser = query_components.get('parser', [''])[0]
@@ -377,7 +385,8 @@ class Handler(BaseHTTPRequestHandler):
                 parser_yaml = self.fetch_local_yaml('parser.yaml')
 
             if not parser_yaml:
-                self.send_error(500, "Error in fetching parser_yaml: The YAML content could not be retrieved or parsed.")
+                self.send_error(500,
+                                "Error in fetching parser_yaml: The YAML content could not be retrieved or parsed.")
                 return
 
             mixin = query_components.get('mixin', [''])[0]

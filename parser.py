@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 # Author: InoryS
 # Git repository: https://github.com/InoryS/Clash-Parser-Online
-# Vesion: 2024-05-06.01
+# Version: 2024-07-28.05
 
 import base64
+import json
+import logging
 import re
 import urllib
 
@@ -13,22 +15,20 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import requests
 
 
-class handler(BaseHTTPRequestHandler):
-    # def __init__(self):
-    # 由于 BaseHTTPRequestHandler 不是使用典型的构造方法初始化的，不好 super() 所以使用自定义初始化
-    def initialize(self):
-        # 自定义初始化逻辑
-        if not hasattr(self, 'subscription_userinfo'):
-            self.subscription_userinfo = None
-            self.profile_update_interval = None
-            self.content_disposition = None
-            self.profile_web_page_url = None
-            self.user_agent = None
+class Handler(BaseHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        self.subscription_userinfo = None
+        self.profile_update_interval = None
+        self.content_disposition = None
+        self.profile_web_page_url = None
+        self.user_agent = None
+        self.magic_number = 'jynb'
+        super().__init__(*args, **kwargs)
 
     def log_message(self, format, *args):
         # 覆盖此方法以避免在控制台记录每个请求
         pass
-    
+
     @staticmethod
     def parse_query_parameters(path):
         # 解析 URL 中的查询参数
@@ -39,7 +39,6 @@ class handler(BaseHTTPRequestHandler):
     def fetch_yaml(self, url, fetch_type=None):
         # 从给定的 URL 获取并解析 YAML
         try:
-            print(f"trying to getting url")
             response = requests.get(url, headers={'User-Agent': self.user_agent})
             response.raise_for_status()
             if fetch_type == 'source':
@@ -52,8 +51,11 @@ class handler(BaseHTTPRequestHandler):
                 # 记录 profile-web-page-url 响应头，即配置文件主页
                 self.profile_web_page_url = response.headers.get('Profile-Web-Page-Url', None)
             return yaml.safe_load(response.content)
+        except requests.RequestException as error:
+            self.send_error(500, f"Error fetching YAML from {url}: {error}")
+            return None
         except Exception as error:
-            print(f"Error fetching YAML from {url}: {error}")
+            self.send_error(500, f"Unknown error fetching YAML from {url}: {error}")
             return None
 
     @staticmethod
@@ -71,7 +73,6 @@ class handler(BaseHTTPRequestHandler):
 
     def modify_yaml(self, source_yaml, parser_yaml):
         # 根据 parser_yaml 中的规则修改 source_yaml
-        # 执行 parser
         try:
             for key, operations in parser_yaml.get('yaml', {}).items():
                 if key.startswith('append-') or key.startswith('prepend-'):
@@ -86,6 +87,7 @@ class handler(BaseHTTPRequestHandler):
             return source_yaml
 
         except Exception as error:
+            self.send_error(500, f"Error modifying YAML: {error}")
             return None
 
     @staticmethod
@@ -94,7 +96,6 @@ class handler(BaseHTTPRequestHandler):
         list_name = key.split('-', 1)[1]
         source_list = source_yaml.get(list_name, [])
 
-        # Prepend or append operations
         # 根据操作类型（附加 Prepend 或前置 append）进行修改
         if key.startswith('append-'):
             source_list.extend(operations)
@@ -124,14 +125,26 @@ class handler(BaseHTTPRequestHandler):
         if value.startswith('[]'):
             regex_pattern = value[2:]
             self.apply_regex_to_proxies(source_yaml, target_group, regex_pattern)
-
-        if operation == '+':
-            # 插入代理到特定位置
-            index = int(path[2]) if path[2].isdigit() else None
-            if index is not None and index < len(target_group['proxies']):
-                target_group['proxies'].insert(index, value)
-            else:
-                target_group['proxies'].append(value)  # 如果索引无效，则默认添加到末尾
+        else:
+            if operation == '+':
+                # 插入代理到特定位置
+                index = int(path[-1]) if path[-1].isdigit() else None
+                if index is not None and index < len(target_group['proxies']):
+                    target_group['proxies'].insert(index, value)
+                else:
+                    target_group['proxies'].append(value)  # 如果索引无效，则默认添加到末尾
+            elif operation == '=':
+                # 覆盖指定位置
+                index = int(path[-1]) if path[-1].isdigit() else None
+                if index is not None and index < len(target_group['proxies']):
+                    target_group['proxies'][index] = value
+                else:
+                    target_group['proxies'] = [value]  # 如果索引无效，则覆盖整个列表
+            elif operation == '-':
+                # 删除指定位置
+                index = int(path[-1]) if path[-1].isdigit() else None
+                if index is not None and index < len(target_group['proxies']):
+                    del target_group['proxies'][index]
 
     @staticmethod
     def find_proxy_group(source_yaml, path):
@@ -156,14 +169,16 @@ class handler(BaseHTTPRequestHandler):
 
     @staticmethod
     def parse_command(command):
-        # 首先尝试以 '+' 为分隔符分割命令
+        # 解析命令，支持 + = - 三种操作符
         if '+' in command:
             parts = command.split('+', 1)
             operation = '+'
-        # 如果没有 '+', 则尝试以 '=' 为分隔符
         elif '=' in command:
             parts = command.split('=', 1)
             operation = '='
+        elif '-' in command:
+            parts = command.split('-', 1)
+            operation = '-'
         else:
             raise ValueError("Invalid command format")
 
@@ -198,21 +213,20 @@ class handler(BaseHTTPRequestHandler):
 
         return raw_url
 
-    def fetch_local_url(self, file_name):
+    def fetch_local_url_txt(self, file_name):
         """
-        从文件内读取链接
+        从 txt 文件内读取链接
         :param file_name: 文件名
         :return: 解析后的URL
         :rtype: str
         """
-        file_processed = False
-        file_path = ['./' + file_name, '../' + file_name]
+        file_path = ['../' + file_name, './' + file_name]
 
         for file in file_path:
             try:
                 with open(file, 'r', encoding='utf-8') as opened_file:
                     url_raw = opened_file.readline().strip()  # 读取第一行，订阅链接
-                    url_type = opened_file.readline().strip()  # 读取第一行，链接编码类型
+                    url_type = opened_file.readline().strip()  # 读取第二行，链接编码类型
 
                     # 根据第二行的内容选择解码方法
                     if url_type.lower() in ['base64', 'base64-encoded']:
@@ -222,113 +236,176 @@ class handler(BaseHTTPRequestHandler):
                     elif url_type.lower() in ['raw', 'default', 'normal']:
                         url = url_raw
                     else:
-                        url = handler.decode_raw_url(url_raw)  # 假设这是静态方法
+                        url = self.decode_raw_url(url_raw)
 
-                    file_processed = True
-                    break
+                    if url:
+                        return url
             except FileNotFoundError:
                 continue  # 尝试下一个文件路径
             except Exception as error:
-                print(f"fetch_local_url error: {error}")
+                logging.exception(500, f"fetch_local_url_txt: Error in reading {file_name}: {error}")
+                self.send_error(500, f"fetch_local_url_txt: Error in reading {file_name}")
                 break
 
-        if file_processed:
-            return url
-        else:
-            print(f"using fetch_local_url, but {file_name} not found")
-            self.send_error(500, f"using fetch_local_url, but {file_name} not found")
+        logging.exception(f"fetch_local_url_txt: File {file_name} not found")
+        self.send_error(500, f"fetch_local_url_txt: File {file_name} not found")
+
+    def fetch_local_url_json(self, file_name, source_name):
+        """
+        从 json 文件内读取链接
+        :param file_name: 文件名
+        :param source_name: 订阅名称
+        :return: 解析后的URL
+        :rtype: str
+        """
+        file_path = ['../' + file_name, './' + file_name]
+
+        for file in file_path:
+            try:
+                with open(file, 'r', encoding='utf-8') as opened_file:
+                    json_raw = json.load(opened_file)
+                    url_raw = json_raw.get('data', {}).get(source_name, {}).get('url')  # 订阅链接
+                    url_type = json_raw.get('data', {}).get(source_name, {}).get('url_type')  # 链接编码类型
+
+                    # 根据第二行的内容选择解码方法
+                    if url_type.lower() in ['base64', 'base64-encoded']:
+                        url = base64.b64decode(url_raw).decode('utf-8')
+                    elif url_type.lower() in ['urlencode', 'urlencoded', 'url_encode', 'url encode']:
+                        url = urllib.parse.unquote(url_raw)
+                    elif url_type.lower() in ['raw', 'default', 'normal']:
+                        url = url_raw
+                    else:
+                        url = self.decode_raw_url(url_raw)
+
+                    if url:
+                        return url
+            except FileNotFoundError:
+                continue  # 尝试下一个文件路径
+            except Exception as error:
+                logging.exception(500, f"fetch_local_url_json: Error in reading {file_name}: {error}")
+                self.send_error(500, f"fetch_local_url_json: Error in reading {file_name}")
+                break
+
+        logging.exception(f"fetch_local_url_json: File {file_name} not found")
+        self.send_error(500, f"fetch_local_url_json: File {file_name} not found")
+        return
 
     def fetch_local_yaml(self, file_name):
         """
         读取本地 yaml 文件。
         :param file_name: 文件名
         :return: 文件内容的yaml对象
-        :rtype yaml object
+        :rtype: yaml object
         """
-        file_processed = False  # 增加标记变量
-        file_path = ['./' + file_name, '../' + file_name]
+        file_path = ['../' + file_name, './' + file_name]
 
         for file in file_path:
             try:
                 with open(file, 'r', encoding='utf-8') as opened_file:
-                    file_processed = True
                     return yaml.safe_load(opened_file)
             except FileNotFoundError:
                 continue  # 尝试下一个文件路径
             except Exception as error:
-                print(f"fetch_local_yaml error: {error}")
+                logging.exception(500, f"fetch_local_yaml: Error in reading {file_name}: {error}")
+                self.send_error(500, f"fetch_local_yaml: Error in reading {file_name}")
                 break
 
-        if not file_processed:
-            # 如果没有成功处理任何文件
-            print(f"using fetch_local_yaml file, but {file_name} not found")
-            self.send_error(500, f"using fetch_local_yaml, but {file_name} file not found")
+        logging.exception(f"fetch_local_yaml: File {file_name} not found")
+        self.send_error(500, f"fetch_local_yaml: File {file_name} not found")
+        return
 
     def do_GET(self):
-        # 确保初始化
-        self.initialize()
-        
+        # 处理 favicon.ico 请求
+        if self.path == '/favicon.ico':
+            self.send_error(404, "favicon.ico Not Found")
+            return
+
+        # 只处理 /api 路径的请求
+        if not self.path.startswith('/api'):
+            self.send_error(404, "Not Found")
+            return
+
+        logging.info("Start processing")
+        # 记录 UA 远程获取时原样使用
         self.user_agent = self.headers.get('User-Agent')
-        source_url, parser_url, mixin_url = None, None, None
+
+        source_url, parser_url, mixin_url, modified_yaml = None, None, None, None
 
         # 解析查询参数，并获取对应文件
         query_components = self.parse_query_parameters(self.path)
         try:
             source = query_components.get('source', [''])[0]
-            if source == 'jynb':  # 幻数从本地获取
-                source_url = self.fetch_local_url('source.txt')
+            source_split = source.split('-', 2)
+            if len(source_split) == 2 and source_split[0] == self.magic_number:
+                # 如果为 幻数-123 那么就从本地 source.json 中获取名为 123 的链接
+                source_url = self.fetch_local_url_json('source.json', source_split[1])
                 source_yaml = self.fetch_yaml(source_url, 'source')
-            else:
+            elif source == self.magic_number:  # 如果为幻数从本地 source.txt 获取第一行链接
+                source_url = self.fetch_local_url_txt('source.txt')
+                source_yaml = self.fetch_yaml(source_url, 'source')
+            else:  # 否则尝试解码 base64
                 source_url = base64.b64decode(source).decode()
                 source_yaml = self.fetch_yaml(source_url, 'source')
 
             if not source_yaml:
-                print("Error fetching source_yaml")
-                self.send_error(500, "Error fetching source_yaml")
+                self.send_error(500, "Error in fetching source_yaml: The YAML content could not be retrieved or parsed.")
+                return
 
             parser = query_components.get('parser', [''])[0]
-            if parser:
+            parser_split = parser.split('-', 2)
+            if len(parser_split) == 2 and parser_split[0] == self.magic_number:  # 如果为 幻数-123 那么就从本地读取 parser-123.yaml
+                parser_yaml = self.fetch_local_yaml('parser-' + parser_split[1] + '.yaml')
+            elif parser == self.magic_number:  # 如果为 幻数 那么就从本地读取 mixin.yaml
+                parser_yaml = self.fetch_local_yaml('parser.yaml')
+            elif parser:  # 否则尝试解码 base64
                 parser_url = base64.b64decode(parser).decode()
                 parser_yaml = self.fetch_yaml(parser_url)
-            else:  # 不提供就默认从本地获取
+            else:  # 不提供 parser 参数就默认从本地获取，因为设计就是为了 parser，也是向前兼容
                 parser_yaml = self.fetch_local_yaml('parser.yaml')
 
             if not parser_yaml:
-                print("Error fetching parser_yaml")
-                self.send_error(500, "Error fetching parser_yaml")
+                self.send_error(500, "Error in fetching parser_yaml: The YAML content could not be retrieved or parsed.")
+                return
 
             mixin = query_components.get('mixin', [''])[0]
+            mixin_split = mixin.split('-', 2)
             if mixin:
-                if mixin == 'jynb':  # 幻数从本地获取
+                if len(mixin_split) == 2 and mixin_split[0] == self.magic_number:  # 如果为 幻数-123 那么就从本地读取 mixin-123.yaml
+                    mixin_yaml = self.fetch_local_yaml('mixin-' + mixin_split[1] + '.yaml')
+                elif mixin == self.magic_number:  # 如果为 幻数 那么就从本地读取 mixin.yaml
                     mixin_yaml = self.fetch_local_yaml('mixin.yaml')
-                elif mixin == 'jynb-premium': # 另一套 mixin，给其他功能不同的核心分支使用
-                    mixin_yaml = self.fetch_local_yaml('mixin-premium.yaml')
-                else:
+                else:  # 否则尝试解码 base64
                     mixin_url = base64.b64decode(mixin).decode()
                     mixin_yaml = self.fetch_yaml(mixin_url)
-            else:
+            else:  # 不提供 mixin 就不处理
                 mixin_yaml = None
+
         except Exception as error:
+            logging.exception(error)
             self.send_error(500, f"Unable to decode URL: {error}")
+            return
 
         try:
             # 进行 mixin
+            logging.info("Perform mixin")
             if source_yaml and mixin_yaml:
-                print("Perform mixin")
                 source_yaml = self.merge_yaml(source_yaml, mixin_yaml)
         except Exception as error:
             self.send_error(500, f"Error in perform mixin: {error}")
+            return
 
         try:
             # 进行 parser
             if source_yaml and parser_yaml:
-                print("Perform parser")
+                logging.info("Perform parser")
                 modified_yaml = self.modify_yaml(source_yaml, parser_yaml)
         except Exception as error:
             self.send_error(500, f"Error in perform parser: {error}")
+            return
 
         if modified_yaml:
             # 发送正确响应
+            logging.info("Successfully modified yaml")
             self.send_response(200)
             # self.send_header('Content-type', 'application/yaml')
             self.send_header('Content-type', 'text/plain;charset=utf-8')
@@ -345,16 +422,22 @@ class handler(BaseHTTPRequestHandler):
             # 写入文件
             self.wfile.write(
                 yaml.dump(modified_yaml, allow_unicode=True, default_flow_style=False, sort_keys=False).encode())
+            return
         else:
-            self.send_error(500, "Unable to parse YAML files, possibly due to an incorrect YAML file")
+            self.send_error(500, "Unable to parse YAML files, possibly due to an incorrect YAML file structure.")
+            return
 
 
-def run_server(server_class=HTTPServer, handler_class=handler, port=8000):
+def run_server(server_class=HTTPServer, handler_class=Handler, port=8000):
     server_address = ('127.0.0.1', port)
     httpd = server_class(server_address, handler_class)
-    print(f"Starting HTTP server on port {port}")
+    logging.info(f"Starting HTTP server on port {port}")
     httpd.serve_forever()
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    # 由于vercel 原因，不能 global 也不能传递 init 参数，请自行到 class 内修改 magic_number
+    # magic_number = 'jynb'
     run_server()

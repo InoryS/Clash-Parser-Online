@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: InoryS
 # Git repository: https://github.com/InoryS/Clash-Parser-Online
-# Version: 2024-07-28.05
+# Version: 2024-07-28.09
 
 import base64
 import json
@@ -115,41 +115,54 @@ class Handler(BaseHTTPRequestHandler):
         source_yaml[object_name] = source_object
 
     def apply_command(self, source_yaml, command):
-        path, operation, value = self.parse_command(command)
+        try:
+            path, operation, value = self.parse_command(command)
+            logging.debug(f"Applying command: {command} -> path: {path}, operation: {operation}, value: {value}")
 
-        # 查找并处理目标策略组
-        target_group = self.find_proxy_group(source_yaml, path)
-        if target_group is None:
-            return  # 如果没有找到目标策略组，则跳过此命令
+            # 查找并处理目标策略组
+            target_group = self.find_proxy_group(source_yaml, path)
+            if target_group is None:
+                logging.debug(f"Target group not found for path: {path}, skipping")
+                return  # 如果没有找到目标策略组，则跳过此命令
 
-        if value.startswith('[]'):
-            regex_pattern = value[2:]
-            self.apply_regex_to_proxies(source_yaml, target_group, regex_pattern)
-        else:
-            if operation == '+':
-                # 插入代理到特定位置
-                index = int(path[-1]) if path[-1].isdigit() else None
-                if index is not None and index < len(target_group['proxies']):
-                    target_group['proxies'].insert(index, value)
-                else:
-                    target_group['proxies'].append(value)  # 如果索引无效，则默认添加到末尾
-            elif operation == '=':
-                # 覆盖指定位置
-                index = int(path[-1]) if path[-1].isdigit() else None
-                if index is not None and index < len(target_group['proxies']):
-                    target_group['proxies'][index] = value
-                else:
-                    target_group['proxies'] = [value]  # 如果索引无效，则覆盖整个列表
-            elif operation == '-':
-                # 删除指定位置
-                index = int(path[-1]) if path[-1].isdigit() else None
-                if index is not None and index < len(target_group['proxies']):
-                    del target_group['proxies'][index]
+            if value.startswith('[]'):
+                regex_pattern = value[2:]
+                self.apply_regex_to_proxies(source_yaml, target_group, regex_pattern)
+            else:
+                if operation == '+':
+                    # 插入代理到特定位置
+                    index = int(path[-1]) if path[-1].isdigit() else None
+                    if index is not None and index < len(target_group['proxies']):
+                        target_group['proxies'].insert(index, value)
+                    else:
+                        target_group['proxies'].append(value)  # 如果索引无效，则默认添加到末尾
+                elif operation == '=':
+                    # 覆盖指定位置
+                    index = int(path[-1]) if path[-1].isdigit() else None
+                    if index is not None and index < len(target_group['proxies']):
+                        target_group['proxies'][index] = value
+                    else:
+                        target_group['proxies'] = [value]  # 如果索引无效，则覆盖整个列表
+                elif operation == '-':
+                    # 删除指定位置或匹配名称的代理
+                    proxy_name = value.strip('()')
+                    if proxy_name.isdigit():
+                        index = int(proxy_name)
+                        if 0 <= index < len(target_group['proxies']):
+                            del target_group['proxies'][index]
+                    else:
+                        target_group['proxies'] = [proxy for proxy in target_group['proxies'] if proxy != proxy_name]
+
+        except Exception as error:
+            logging.exception(f"Error applying command {command}: {error}")
+            self.send_error(500, f"Error applying command {command}")
+            return
 
     @staticmethod
     def find_proxy_group(source_yaml, path):
         # 检查路径长度是否足够
         if len(path) < 2:
+            logging.debug(f"Path too short: {path}")
             return None
         # 查找指定的策略组
         group_name = path[1]
@@ -171,22 +184,22 @@ class Handler(BaseHTTPRequestHandler):
     def parse_command(command):
         # 解析命令，支持 + = - 三种操作符
         if '+' in command:
-            parts = command.split('+', 1)
+            parts = command.rpartition('+')
             operation = '+'
         elif '=' in command:
-            parts = command.split('=', 1)
+            parts = command.rpartition('=')
             operation = '='
         elif '-' in command:
-            parts = command.split('-', 1)
+            parts = command.rpartition('-')
             operation = '-'
         else:
             raise ValueError("Invalid command format")
 
-        if len(parts) != 2:
+        if len(parts) != 3:
             raise ValueError("Invalid command format")
 
         path = parts[0].split('.')
-        value = parts[1]
+        value = parts[2]
 
         return path, operation, value
 
@@ -438,6 +451,6 @@ def run_server(server_class=HTTPServer, handler_class=Handler, port=8000):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-    # 由于vercel 原因，不能 global 也不能传递 init 参数，请自行到 class 内修改 magic_number
+    # 由于vercel 原因，不能 global 也不能传递 init 参数，请自行到 class 内 __init__ 方法修改 magic_number
     # magic_number = 'jynb'
     run_server()

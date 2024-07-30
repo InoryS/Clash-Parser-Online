@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: InoryS
 # Git repository: https://github.com/InoryS/Clash-Parser-Online
-# Version: 2024-07-28.10
+# Version: 2024-07-30.2
 
 import base64
 import json
@@ -52,9 +52,11 @@ class Handler(BaseHTTPRequestHandler):
                 self.profile_web_page_url = response.headers.get('Profile-Web-Page-Url', None)
             return yaml.safe_load(response.content)
         except requests.RequestException as error:
+            logging.exception(f"Error fetching YAML from {url}: {error}")
             self.send_error(500, f"Error fetching YAML from {url}: {error}")
             return None
         except Exception as error:
+            logging.exception(f"Unknown error fetching YAML from {url}: {error}")
             self.send_error(500, f"Unknown error fetching YAML from {url}: {error}")
             return None
 
@@ -87,6 +89,7 @@ class Handler(BaseHTTPRequestHandler):
             return source_yaml
 
         except Exception as error:
+            logging.exception(f"Error modifying YAML: {error}")
             self.send_error(500, f"Error modifying YAML: {error}")
             return None
 
@@ -127,7 +130,7 @@ class Handler(BaseHTTPRequestHandler):
 
             if value.startswith('[]'):
                 regex_pattern = value[2:]
-                self.apply_regex_to_proxies(source_yaml, target_group, regex_pattern)
+                self.apply_regex_to_proxies(source_yaml, target_group, regex_pattern, operation)
             else:
                 if operation == '+':
                     # 插入代理到特定位置
@@ -172,13 +175,25 @@ class Handler(BaseHTTPRequestHandler):
         return None
 
     @staticmethod
-    def apply_regex_to_proxies(source_yaml, target_group, regex_pattern):
+    def apply_regex_to_proxies(source_yaml, target_group, regex_pattern, operation):
+        logging.debug(f"Applying regex Target group: {target_group}")
+        logging.debug(f"Applying regex pattern: {regex_pattern}")
         # 使用正则表达式筛选代理
         regex = re.compile(regex_pattern)
         matched_proxies = [proxy['name'] for proxy in source_yaml.get('proxies', []) if regex.search(proxy['name'])]
 
-        # 将匹配的代理添加到目标策略组
-        target_group['proxies'].extend(matched_proxies)
+        if operation == '+':
+            # 将匹配的代理添加到目标策略组
+            target_group['proxies'].extend(matched_proxies)
+        if operation == '=':
+            # 将匹配的代理覆盖原目标策略组
+            target_group['proxies'] = matched_proxies
+        if operation == '-':
+            # 将匹配的代理从目标策略组移除
+            existing_proxies = set(target_group['proxies'])
+            matched_set = set(matched_proxies)
+            target_group['proxies'] = list(existing_proxies - matched_set)
+
 
     @staticmethod
     def parse_command(command):
@@ -199,6 +214,9 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError("Invalid command format")
             path = parts[0].split('.')
             value = parts[1]
+            logging.debug(f"Parsing command regx path: {command}")
+            logging.debug(f"Parsing command regx path: {path}")
+            logging.debug(f"Parsing command regx Value: {value}")
         else:
             # 对于普通命令，使用 rpartition 分割命令为三个部分
             parts = command.rpartition(operation)
@@ -206,6 +224,9 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError("Invalid command format")
             path = parts[0].split('.')
             value = parts[2]
+            logging.debug(f"Parsing command normal path: {command}")
+            logging.debug(f"Parsing command normal path: {path}")
+            logging.debug(f"Parsing command normal Value: {value}")
 
         return path, operation, value
 
@@ -263,7 +284,7 @@ class Handler(BaseHTTPRequestHandler):
             except FileNotFoundError:
                 continue  # 尝试下一个文件路径
             except Exception as error:
-                logging.exception(500, f"fetch_local_url_txt: Error in reading {file_name}: {error}")
+                logging.exception(f"fetch_local_url_txt: Error in reading {file_name}: {error}")
                 self.send_error(500, f"fetch_local_url_txt: Error in reading {file_name}")
                 break
 
@@ -302,7 +323,7 @@ class Handler(BaseHTTPRequestHandler):
             except FileNotFoundError:
                 continue  # 尝试下一个文件路径
             except Exception as error:
-                logging.exception(500, f"fetch_local_url_json: Error in reading {file_name}: {error}")
+                logging.exception(f"fetch_local_url_json: Error in reading {file_name}: {error}")
                 self.send_error(500, f"fetch_local_url_json: Error in reading {file_name}")
                 break
 
@@ -326,7 +347,7 @@ class Handler(BaseHTTPRequestHandler):
             except FileNotFoundError:
                 continue  # 尝试下一个文件路径
             except Exception as error:
-                logging.exception(500, f"fetch_local_yaml: Error in reading {file_name}: {error}")
+                logging.exception(f"fetch_local_yaml: Error in reading {file_name}: {error}")
                 self.send_error(500, f"fetch_local_yaml: Error in reading {file_name}")
                 break
 
@@ -368,6 +389,7 @@ class Handler(BaseHTTPRequestHandler):
                 source_yaml = self.fetch_yaml(source_url, 'source')
 
             if not source_yaml:
+                logging.error(f"Error in fetching source_yaml: The YAML content could not be retrieved or parsed.")
                 self.send_error(500,
                                 "Error in fetching source_yaml: The YAML content could not be retrieved or parsed.")
                 return
@@ -385,6 +407,7 @@ class Handler(BaseHTTPRequestHandler):
                 parser_yaml = self.fetch_local_yaml('parser.yaml')
 
             if not parser_yaml:
+                logging.error("Error in fetching parser_yaml: The YAML content could not be retrieved or parsed.")
                 self.send_error(500,
                                 "Error in fetching parser_yaml: The YAML content could not be retrieved or parsed.")
                 return
@@ -403,7 +426,7 @@ class Handler(BaseHTTPRequestHandler):
                 mixin_yaml = None
 
         except Exception as error:
-            logging.exception(error)
+            logging.exception(f"Unable to decode URL: {error}")
             self.send_error(500, f"Unable to decode URL: {error}")
             return
 
@@ -413,6 +436,7 @@ class Handler(BaseHTTPRequestHandler):
             if source_yaml and mixin_yaml:
                 source_yaml = self.merge_yaml(source_yaml, mixin_yaml)
         except Exception as error:
+            logging.exception(f"Error in perform mixin: {error}")
             self.send_error(500, f"Error in perform mixin: {error}")
             return
 
@@ -422,6 +446,7 @@ class Handler(BaseHTTPRequestHandler):
                 logging.info("Perform parser")
                 modified_yaml = self.modify_yaml(source_yaml, parser_yaml)
         except Exception as error:
+            logging.exception(f"Error in perform parser: {error}")
             self.send_error(500, f"Error in perform parser: {error}")
             return
 
@@ -446,6 +471,7 @@ class Handler(BaseHTTPRequestHandler):
                 yaml.dump(modified_yaml, allow_unicode=True, default_flow_style=False, sort_keys=False).encode())
             return
         else:
+            logging.error("Unable to parse YAML files, possibly due to an incorrect YAML file structure.")
             self.send_error(500, "Unable to parse YAML files, possibly due to an incorrect YAML file structure.")
             return
 
@@ -460,6 +486,9 @@ def run_server(server_class=HTTPServer, handler_class=Handler, port=8000):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-    # 由于vercel 原因，不能 global 也不能传递 init 参数，请自行到 class 内 __init__ 方法修改 magic_number
-    # magic_number = 'jynb'
+    # 由于vercel 原因，不能 global 也不能传递 init 参数
+    # 请自行到 class 内 __init__ 方法的 self.magic_number = 'jynb' 修改 'jynb' 为你想要的值
     run_server()
+
+
+

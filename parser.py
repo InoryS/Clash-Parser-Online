@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: InoryS
 # Git repository: https://github.com/InoryS/Clash-Parser-Online
-# Version: 2024-07-30.2
+# Version: 2024-07-30.5
 
 import base64
 import json
@@ -146,7 +146,7 @@ class Handler(BaseHTTPRequestHandler):
                         target_group['proxies'][index] = value
                     else:
                         target_group['proxies'] = [value]  # 如果索引无效，则覆盖整个列表
-                elif operation == '-':
+                elif operation == '_':
                     # 删除指定位置或匹配名称的代理
                     proxy_name = value.strip('()')
                     if proxy_name.isdigit():
@@ -188,48 +188,59 @@ class Handler(BaseHTTPRequestHandler):
         if operation == '=':
             # 将匹配的代理覆盖原目标策略组
             target_group['proxies'] = matched_proxies
-        if operation == '-':
+        if operation == '_':
             # 将匹配的代理从目标策略组移除
-            existing_proxies = set(target_group['proxies'])
-            matched_set = set(matched_proxies)
-            target_group['proxies'] = list(existing_proxies - matched_set)
+            target_group['proxies'] = [proxy for proxy in target_group['proxies'] if proxy not in matched_proxies]
 
 
     @staticmethod
     def parse_command(command):
-        # 解析命令，支持 + = - 三种操作符
-        operators = ['+', '=', '-']
-        regx_keys = ['proxyNames', 'groupNames', 'shuffledProxyNames']
-
-        # 确定操作符和分割命令
-        operation = next((op for op in operators if op in command), None)
-        if not operation:
-            raise ValueError("Invalid command format")
+        # 解析命令，支持 + = _ 三种操作符
+        operators = ['+', '=', '_']
+        regx_keys = ['[]proxyNames', '[]groupNames', '[]shuffledProxyNames']
 
         # 判断是否包含正则表达式特殊关键字
-        if any(key in command for key in regx_keys):
-            # 如果有正则表达式特殊关键字，使用 split 分割命令为两个部分
-            parts = command.split(operation, 1)
-            if len(parts) != 2:
-                raise ValueError("Invalid command format")
-            path = parts[0].split('.')
-            value = parts[1]
-            logging.debug(f"Parsing command regx path: {command}")
-            logging.debug(f"Parsing command regx path: {path}")
-            logging.debug(f"Parsing command regx Value: {value}")
+        is_regex = any(key in command for key in regx_keys)
+
+        if is_regex:
+            # 如果是正则表达式命令，只选择正则关键字左边的操作符
+            for key in regx_keys:
+                if key in command:
+                    # 分割命令，确保操作符在正则关键字左边
+                    parts = command.split(key, 1)
+                    if len(parts) != 2:
+                        raise ValueError("Invalid command format")
+                    # 找到操作符
+                    left_part = parts[0]
+                    operation = next((op for op in operators if op in left_part), None)
+                    if not operation:
+                        raise ValueError("Invalid command format")
+                    path = left_part.split('.')
+                    path[-1] = f"{path[-1]}{key}"  # 将关键字重新加回路径中
+                    value = key + parts[1]
+                    logging.debug(f"Parsing command regx operation: {operation}")
+                    logging.debug(f"Parsing command regx command: {command}")
+                    logging.debug(f"Parsing command regx parts: {parts}")
+                    logging.debug(f"Parsing command regx path: {path}")
+                    logging.debug(f"Parsing command regx Value: {value}")
+                    break
         else:
             # 对于普通命令，使用 rpartition 分割命令为三个部分
+            operation = next((op for op in operators if op in command), None)
+            if not operation:
+                raise ValueError("Invalid command format")
             parts = command.rpartition(operation)
             if len(parts) != 3:
                 raise ValueError("Invalid command format")
             path = parts[0].split('.')
             value = parts[2]
-            logging.debug(f"Parsing command normal path: {command}")
+            logging.debug(f"Parsing command normal operation: {operation}")
+            logging.debug(f"Parsing command normal command: {command}")
+            logging.debug(f"Parsing command normal parts: {parts}")
             logging.debug(f"Parsing command normal path: {path}")
             logging.debug(f"Parsing command normal Value: {value}")
 
         return path, operation, value
-
 
     @staticmethod
     def decode_raw_url(raw_url):

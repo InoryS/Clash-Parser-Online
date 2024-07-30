@@ -57,15 +57,15 @@ yaml:    #这只是个示例，根据你的需要修改
     # 向 策略组 添加 匹配到的节点
     - proxy-groups.🇪🇺 欧盟节点.proxies+[]proxyNames|^(?=.*(?:test|example)).*$
     # 从 策略组 移除 匹配到的节点
-    - proxy-groups.🇪🇺 欧盟节点.proxies-[]proxyNames|^(?=.*(?:example2)).*$
+    - proxy-groups.🇪🇺 欧盟节点.proxies_[]proxyNames|^(?=.*(?:example2)).*$
     # 向 其他策略组 添加 该策略组
-    - proxy-groups.Ⓜ️ 微软云盘.proxies.0+🚰 大流量 # 向 Ⓜ️ 微软云盘 策略组添加组名🚰大流量  
+    - proxy-groups.Ⓜ️ 微软云盘.proxies.0+🚰 大流量 # 向 Ⓜ️ 微软云盘 策略组添加组名🚰大流量
     # 向 策略组 内添加单个节点
     - proxy-groups.🚀 手动切换.proxies.0+test # 向 🚀 手动切换 策略组添加节点 test
     # 删掉 🇺🇲 美国节点 中的 AUS 01 节点
-    - proxy-groups.🇺🇲 美国节点.proxies-AUS 01
+    - proxy-groups.🇺🇲 美国节点.proxies_AUS 01
     # 删掉 🇺🇲 美国节点 中的第一个节点
-    - proxy-groups.🇺🇲 美国节点.proxies-0
+    - proxy-groups.🇺🇲 美国节点.proxies_0
   prepend-rules:  #添加自定义规则到当前规则上方，Clash 规则从上往下匹配，匹配到第一个为准，因此相当于覆盖当前规则，数组合并至原配置 rules 数组前
     #把“🚀 节点选择”替换为你的代理分组
     #rule-providers 开始

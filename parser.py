@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: InoryS
 # Git repository: https://github.com/InoryS/Clash-Parser-Online
-# Version: 2024-07-30.5
+# Version: 2024-08-17.1
 
 import base64
 import json
@@ -22,7 +22,7 @@ class Handler(BaseHTTPRequestHandler):
         self.content_disposition = None
         self.profile_web_page_url = None
         self.user_agent = None
-        self.magic_number = 'jynb'
+        self.magic_number = 'jynb'  # 记得修改此处幻数
         super().__init__(*args, **kwargs)
 
     def log_message(self, format, *args):
@@ -118,59 +118,84 @@ class Handler(BaseHTTPRequestHandler):
         source_yaml[object_name] = source_object
 
     def apply_command(self, source_yaml, command):
+        def _apply_single_level_operation(target_group, operation, value):
+            if operation == '_':  # 删除操作较为高频
+                if value in target_group:
+                    target_group.remove(value)
+                else:
+                    logging.debug(f"Target group not found for path: {path}, skipping")
+            elif operation == '+':
+                target_group.append(value)
+            elif operation == '=':
+                target_group[:] = [value]
+
+        def _apply_multi_level_operation(target_group, path, operation, value):
+            if 'proxies' not in target_group:
+                logging.error(f"'proxies' not found in target group for path: {path}")
+                return
+
+            proxies = target_group['proxies']
+            index = int(path[-1]) if path[-1].isdigit() else None
+
+            if operation == '+':
+                # 插入代理到特定位置
+                if index is not None and 0 <= index < len(proxies):
+                    proxies.insert(index, value)
+                else:
+                    proxies.append(value)  # 如果索引无效，则默认添加到末尾
+            elif operation == '=':
+                # 覆盖代理到特定位置
+                if index is not None and 0 <= index < len(proxies):
+                    proxies[index] = value
+                else:
+                    proxies[:] = [value]  # 如果索引无效，则覆盖整个列表
+            elif operation == '_':
+                # 删除指定位置或匹配名称的代理
+                if value.strip('()').isdigit():
+                    index = int(value.strip('()'))
+                    if 0 <= index < len(proxies):
+                        del proxies[index]
+                else:
+                    proxies[:] = [proxy for proxy in proxies if proxy != value.strip('()')]
+
         try:
             path, operation, value = self.parse_command(command)
             logging.debug(f"Applying command: {command} -> path: {path}, operation: {operation}, value: {value}")
 
-            # 查找并处理目标策略组
-            target_group = self.find_proxy_group(source_yaml, path)
+            target_group = self.find_target_group(source_yaml, path)
             if target_group is None:
                 logging.debug(f"Target group not found for path: {path}, skipping")
-                return  # 如果没有找到目标策略组，则跳过此命令
+                return
 
             if value.startswith('[]'):
                 regex_pattern = value[2:]
                 self.apply_regex_to_proxies(source_yaml, target_group, regex_pattern, operation)
+                return
+
+            if len(path) == 1:
+                _apply_single_level_operation(target_group, operation, value)
             else:
-                if operation == '+':
-                    # 插入代理到特定位置
-                    index = int(path[-1]) if path[-1].isdigit() else None
-                    if index is not None and index < len(target_group['proxies']):
-                        target_group['proxies'].insert(index, value)
-                    else:
-                        target_group['proxies'].append(value)  # 如果索引无效，则默认添加到末尾
-                elif operation == '=':
-                    # 覆盖指定位置
-                    index = int(path[-1]) if path[-1].isdigit() else None
-                    if index is not None and index < len(target_group['proxies']):
-                        target_group['proxies'][index] = value
-                    else:
-                        target_group['proxies'] = [value]  # 如果索引无效，则覆盖整个列表
-                elif operation == '_':
-                    # 删除指定位置或匹配名称的代理
-                    proxy_name = value.strip('()')
-                    if proxy_name.isdigit():
-                        index = int(proxy_name)
-                        if 0 <= index < len(target_group['proxies']):
-                            del target_group['proxies'][index]
-                    else:
-                        target_group['proxies'] = [proxy for proxy in target_group['proxies'] if proxy != proxy_name]
+                _apply_multi_level_operation(target_group, path, operation, value)
 
         except Exception as error:
             logging.exception(f"Error applying command {command}: {error}")
             self.send_error(500, f"Error applying command {command}")
-            return
 
     @staticmethod
-    def find_proxy_group(source_yaml, path):
+    def find_target_group(source_yaml, path):
         # 检查路径长度是否足够
         if len(path) < 2:
-            logging.debug(f"Path too short: {path}")
-            return None
+            if path[0] in ['rules']:
+                logging.debug(f"Found target group: {path}")
+                return source_yaml.get('rules', [])
+            else:
+                logging.debug(f"Path too short: {path}")
+                return None
         # 查找指定的策略组
         group_name = path[1]
         for group in source_yaml.get('proxy-groups', []):
             if group['name'] == group_name:
+                logging.debug(f"Found target group: {group_name}")
                 return group
         return None
 
@@ -191,7 +216,6 @@ class Handler(BaseHTTPRequestHandler):
         if operation == '_':
             # 将匹配的代理从目标策略组移除
             target_group['proxies'] = [proxy for proxy in target_group['proxies'] if proxy not in matched_proxies]
-
 
     @staticmethod
     def parse_command(command):
@@ -218,11 +242,11 @@ class Handler(BaseHTTPRequestHandler):
                     path = left_part.split('.')
                     path[-1] = f"{path[-1]}{key}"  # 将关键字重新加回路径中
                     value = key + parts[1]
-                    logging.debug(f"Parsing command regx operation: {operation}")
-                    logging.debug(f"Parsing command regx command: {command}")
-                    logging.debug(f"Parsing command regx parts: {parts}")
-                    logging.debug(f"Parsing command regx path: {path}")
-                    logging.debug(f"Parsing command regx Value: {value}")
+                    logging.debug(f"Parsing regx command operation: {operation}")
+                    logging.debug(f"Parsing regx command command: {command}")
+                    logging.debug(f"Parsing regx command parts: {parts}")
+                    logging.debug(f"Parsing regx command path: {path}")
+                    logging.debug(f"Parsing regx command Value: {value}")
                     break
         else:
             # 对于普通命令，使用 rpartition 分割命令为三个部分
@@ -234,11 +258,11 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError("Invalid command format")
             path = parts[0].split('.')
             value = parts[2]
-            logging.debug(f"Parsing command normal operation: {operation}")
-            logging.debug(f"Parsing command normal command: {command}")
-            logging.debug(f"Parsing command normal parts: {parts}")
-            logging.debug(f"Parsing command normal path: {path}")
-            logging.debug(f"Parsing command normal Value: {value}")
+            logging.debug(f"Parsing normal command operation: {operation}")
+            logging.debug(f"Parsing normal command command: {command}")
+            logging.debug(f"Parsing normal command parts: {parts}")
+            logging.debug(f"Parsing normal command path: {path}")
+            logging.debug(f"Parsing normal command Value: {value}")
 
         return path, operation, value
 
@@ -500,6 +524,3 @@ if __name__ == '__main__':
     # 由于vercel 原因，不能 global 也不能传递 init 参数
     # 请自行到 class 内 __init__ 方法的 self.magic_number = 'jynb' 修改 'jynb' 为你想要的值
     run_server()
-
-
-

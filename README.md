@@ -79,17 +79,20 @@ Then just start it:
 python3 parser.py
 ```
 
-Default listener `127.0.0.1:8000`
+The default listening port is `127.0.0.1:8000`, and the path is /api
 
-Then use a reverse proxy such as NGINX for TLS encryption, change the port, etc.
+After startup, you can access `http://127.0.0.1:8000/api?request parameter` to use this service
 
-You should be careful to protect your source.txt and other files from being accessed externally, these files can be placed in the upper directory.
+It is recommended to use a reverse proxy such as NGINX for TLS encryption, modify the port, path, etc.
+
+You should pay attention to protecting your source.txt and other files from external access. These files can be placed in the upper directory.
+
 
 #### Serverless Deployment
 
 You can also easily deploy this application on a serverless platform such as Vercel.
 
-When deploying on a serverless platform, you should be careful to protect your source.txt and other files from being directly accessed externally, for example, use Vercel's vercel.json to redirect these files to other files.
+When deploying on a serverless platform, you should pay attention to protect your source.txt and other files from being directly accessed externally, such as using Vercel's vercel.json to redirect these files to other files.
 
 For deployment on Vercel, please refer to this repository: https://github.com/InoryS/Clash-Parser-Online-Vercel
 
@@ -98,7 +101,7 @@ For deployment on Vercel, please refer to this repository: https://github.com/In
 After deployment, send a GET request by constructing the following URL:
 
 ```
-https://example.com/?source=<base64-encoded-subscription-url>&parser=<base64-encoded-parser.yaml-url>&mixin=<base64-encoded-mixin.yaml-url>
+https://example.com/api?source=<base64-encoded-subscription-url>&parser=<base64-encoded-parser.yaml-url>&mixin=<base64-encoded-mixin.yaml-url>
 ```
 
 ### Parameter Description
@@ -320,9 +323,11 @@ pip install -r requirements.txt
 python3 parser.py
 ```
 
-默认监听 `127.0.0.1:8000`
+默认监听 `127.0.0.1:8000`，路径为 /api
 
-然后使用 NGINX 等反向代理进行 TLS 加密，修改端口等。
+启动后可以访问 `http://127.0.0.1:8000/api?请求参数` 来使用此服务
+
+建议使用 NGINX 等反向代理进行 TLS 加密，修改端口、路径等。
 
 你应该注意保护你的 source.txt 等文件不可被外部访问，这些文件可以放在上层目录。
 
@@ -340,7 +345,7 @@ python3 parser.py
 部署后，通过构造以下 URL 发送 GET 请求：
 
 ```
-https://example.com/?source=<base64-encoded-subscription-url>&parser=<base64-encoded-parser.yaml-url>&mixin=<base64-encoded-mixin.yaml-url>
+https://example.com/api?source=<base64-encoded-subscription-url>&parser=<base64-encoded-parser.yaml-url>&mixin=<base64-encoded-mixin.yaml-url>
 ```
 
 ### 参数说明

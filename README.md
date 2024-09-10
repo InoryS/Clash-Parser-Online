@@ -224,8 +224,10 @@ Just don't provide source.
 
 Others can access with complete parameters.
 
+<br>
+<br>
 
-
+The document may not be updated in time, please feel free to ask questions if you have any.
 
 <br>
 <br>
@@ -271,7 +273,7 @@ Others can access with complete parameters.
 - 高级 command 功能可能实现不全，已实现请参考项目中的示例（虽然还是不是完整示例）。
 
 ## 典型使用场景
-场景1
+场景 1
 1. 从订阅转换获取订阅链接，并指定自己喜欢的规则集
 2. 该规则集少了某些规则或者某些规则不合适
 3. 使用 parser 功能向配置文件添加/删除/覆盖 节点、节点组、规则、规则组等
@@ -279,7 +281,7 @@ Others can access with complete parameters.
 5. 获得自己满意的配置文件订阅链接
 
 
-场景2
+场景 2
 1. 多设备使用，经常更换订阅
 2. 使用幻数功能，各设备都使用同一个链接
 3. 设计初衷就是要 parser 的，所以你需要放置一个有效的 parser.yaml (可以为空，但必须有）
@@ -287,7 +289,7 @@ Others can access with complete parameters.
 5. 各设备更新订阅即可
 
 
-场景3
+场景 3
 1. 订阅众多，希望都进行处理，或是单纯想加一层中转
 2. 使用幻数功能的幻数参数，便捷管理多个订阅链接
 3. 更新订阅时只需要更新服务器上 source.json 中的订阅链接，而不需要更换设备上的链接
@@ -473,4 +475,10 @@ https://clash-parser-online-vercel.vercel.app/api?source=jynb&parser=jynb-test&m
 只要不提供 source 就行。
 
 其他人带完整参数访问。
+
+
+<br>
+<br>
+
+文档可能更新不及时，有问题欢迎提问。
 

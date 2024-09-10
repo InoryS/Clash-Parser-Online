@@ -10,7 +10,7 @@ In other words, you can continue writing configuration file preprocessors in the
 
 Even if CFW is no longer updated, you can continue using its Parser and Mixin features online through this tool, without being restricted to any specific implementation.
 
-For those who contribute to the firewood, yet still freeze in the snow.
+Those who contribute to the firewood, yet still freeze in the snow.
 
 ## Disclaimer
 
@@ -240,13 +240,13 @@ Others can access with complete parameters.
 
 也就是说，你可以继续以 CFW 风格来编写配置文件预处理，并且可以在任何客户端实现使用。
 
-即使 CFW 不再更新，你也可以通过这个工具在线继续使用它的 Parser 和 Mixin 功能，且不再受限于某某实现。
+即使 CFW 不再更新，你也可以通过这个工具在线继续使用它的 Parser 和 Mixin 功能，且不再受限于某某实现某某设备。
 
 为众人拾柴者，还是冻毙于风雪了。
 
 ## 免责声明
 
-此工具仅用于对 YAML 配置文件进行处理，只是一个纯文本文件修改工具，其输出完全依赖于用户输入，程序本身并不能产生任何数据。
+此工具仅用于对 YAML 配置文件进行处理，只是一个纯文本文件处理工具，其输出完全依赖于用户输入，程序本身并不能产生任何数据。
 
 它不包含违反任何国家法律法规的内容。
 

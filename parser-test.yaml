@@ -1,0 +1,14 @@
+yaml:
+  prepend-proxies:
+    - name: test
+      type: socks5
+      server: 127.0.0.1
+      port: 1080
+  prepend-proxy-groups:
+    - name: test
+      type: select
+      proxies:
+        - vpn
+  prepend-rules:
+    - IP-CIDR, 10.0.0.1/32, test
+    - DOMAIN-SUFFIX, cn.bing.com, DIRECT

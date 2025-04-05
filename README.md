@@ -28,8 +28,14 @@ Please search for `jynb` in the main program to change the magic number to anoth
 
 ## Features
 
-- Implements the basic Parser and Mixin functionalities of CFW (limited to YAML method, please refer to CFW documentation for features).
-- Some advanced command features may not be fully implemented. Please refer to the project examples for features that have been implemented (though the examples are still not complete).
+- Implement the basic CFW Parser and Mixin functions. (YAML method only, please refer to the CFW document or the example file in this repository for the functions)
+- The advanced command functions may not be fully implemented. For the implemented parts, please refer to the examples in the project (may be incomplete):.
+
+For the specific implementation part, please refer to the example file in this repository:
+
+https://github.com/InoryS/Clash-Parser-Online/blob/main/mixin.yaml
+
+https://github.com/InoryS/Clash-Parser-Online/blob/main/parser.yaml
 
 ## Typical Use Cases
 Scenario 1
@@ -269,8 +275,17 @@ The document may not be updated in time, please feel free to ask questions if yo
 
 ## 功能特性
 
-- 实现基本 CFW 的 Parser 和 Mixin 功能。（仅限 YAML 方法，功能请参考 CFW 文档）
-- 高级 command 功能可能实现不全，已实现请参考项目中的示例（虽然还是不是完整示例）。
+- 实现基本 CFW 的 Parser 和 Mixin 功能。（仅限 YAML 方法，功能请参考 CFW 文档或本仓库文件示例）
+- 高级 command 功能可能实现不全，已实现部分请参考项目中的示例（可能不完整）：。
+
+具体实现部分请参考本仓库文件示例：
+
+https://github.com/InoryS/Clash-Parser-Online/blob/main/mixin.yaml
+
+https://github.com/InoryS/Clash-Parser-Online/blob/main/parser.yaml
+
+
+
 
 ## 典型使用场景
 场景 1

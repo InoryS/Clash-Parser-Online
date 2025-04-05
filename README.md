@@ -37,6 +37,12 @@ https://github.com/InoryS/Clash-Parser-Online/blob/main/mixin.yaml
 
 https://github.com/InoryS/Clash-Parser-Online/blob/main/parser.yaml
 
+subscribe source:
+
+https://github.com/InoryS/Clash-Parser-Online/blob/main/source.json
+
+https://github.com/InoryS/Clash-Parser-Online/tree/main/source.txt
+
 ## Typical Use Cases
 Scenario 1
 1. Obtain a subscription link via conversion and specify your preferred rule set.
@@ -284,7 +290,11 @@ https://github.com/InoryS/Clash-Parser-Online/blob/main/mixin.yaml
 
 https://github.com/InoryS/Clash-Parser-Online/blob/main/parser.yaml
 
+订阅源:
 
+https://github.com/InoryS/Clash-Parser-Online/blob/main/source.json
+
+https://github.com/InoryS/Clash-Parser-Online/tree/main/source.txt
 
 
 ## 典型使用场景

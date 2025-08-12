@@ -1,5 +1,7 @@
 [English](#english) | [简体中文](#%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/InoryS/Clash-Parser-Online)
+
 <br>
 
 # English

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: InoryS
 # Git repository: https://github.com/InoryS/Clash-Parser-Online
-# Version: 2024-08-17.1
+# Version: 2024-12-16.3
 
 import base64
 import json
@@ -17,13 +17,16 @@ import requests
 
 class Handler(BaseHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
+        self.magic_number = 'jynb'  # 记得修改此处幻数
         self.subscription_userinfo = None
         self.profile_update_interval = None
         self.content_disposition = None
         self.profile_web_page_url = None
         self.user_agent = None
-        self.magic_number = 'jynb'  # 记得修改此处幻数
         super().__init__(*args, **kwargs)
+
+        # 添加处理未知标签的逻辑
+        yaml.add_multi_constructor("!", self.ignore_unknown_tags)
 
     def log_message(self, format, *args):
         # 覆盖此方法以避免在控制台记录每个请求
@@ -36,11 +39,27 @@ class Handler(BaseHTTPRequestHandler):
         query = urlparse(path).query
         return parse_qs(query)
 
+    @staticmethod
+    def ignore_unknown_tags(loader, tag_suffix, node):
+        # 处理未知 YAML 标签
+        # 返回 node.value 忽略标签，确保解析不会失败
+        if isinstance(node, yaml.ScalarNode):
+            return loader.construct_scalar(node)
+        elif isinstance(node, yaml.SequenceNode):
+            return loader.construct_sequence(node)
+        elif isinstance(node, yaml.MappingNode):
+            return loader.construct_mapping(node)
+        else:
+            return None
+
     def fetch_yaml(self, url, fetch_type=None):
         # 从给定的 URL 获取并解析 YAML
         try:
+
+            # 发起请求获取 YAML 数据
             response = requests.get(url, headers={'User-Agent': self.user_agent})
             response.raise_for_status()
+
             if fetch_type == 'source':
                 # 记录 Subscription-Userinfo 响应头，即流量信息
                 self.subscription_userinfo = response.headers.get('Subscription-Userinfo', None)
@@ -50,10 +69,16 @@ class Handler(BaseHTTPRequestHandler):
                 self.content_disposition = response.headers.get('Content-Disposition', None)
                 # 记录 profile-web-page-url 响应头，即配置文件主页
                 self.profile_web_page_url = response.headers.get('Profile-Web-Page-Url', None)
+
+            # 使用自定义的解析器解析 YAML 数据
             return yaml.safe_load(response.content)
         except requests.RequestException as error:
             logging.exception(f"Error fetching YAML from {url}: {error}")
             self.send_error(500, f"Error fetching YAML from {url}: {error}")
+            return None
+        except yaml.YAMLError as error:
+            logging.exception(f"YAML parsing error: {error}")
+            self.send_error(500, f"YAML parsing error: {error}")
             return None
         except Exception as error:
             logging.exception(f"Unknown error fetching YAML from {url}: {error}")
@@ -271,8 +296,8 @@ class Handler(BaseHTTPRequestHandler):
         # 本地文件解码
         def is_base64(s):
             try:
-                encoded = base64.b64encode(base64.b64decode(s)).decode('utf-8')
-                return encoded == s and all(char.isprintable() for char in base64.b64decode(s).decode('utf-8'))
+                encoded = base64.b64encode(base64.urlsafe_b64decode(s)).decode('utf-8')
+                return encoded == s and all(char.isprintable() for char in base64.urlsafe_b64decode(s).decode('utf-8'))
             except Exception:
                 return False
 
@@ -285,7 +310,7 @@ class Handler(BaseHTTPRequestHandler):
 
         if is_base64(raw_url):
             # 检查是不是 base64 过的文本，是则返回解码的文本
-            return base64.b64decode(raw_url).decode('utf-8')
+            return base64.urlsafe_b64decode(raw_url).decode('utf-8')
 
         return raw_url
 
@@ -306,7 +331,7 @@ class Handler(BaseHTTPRequestHandler):
 
                     # 根据第二行的内容选择解码方法
                     if url_type.lower() in ['base64', 'base64-encoded']:
-                        url = base64.b64decode(url_raw).decode('utf-8')
+                        url = base64.urlsafe_b64decode(url_raw).decode('utf-8')
                     elif url_type.lower() in ['urlencode', 'urlencoded', 'url_encode', 'url encode']:
                         url = urllib.parse.unquote(url_raw)
                     elif url_type.lower() in ['raw', 'default', 'normal']:
@@ -345,7 +370,7 @@ class Handler(BaseHTTPRequestHandler):
 
                     # 根据第二行的内容选择解码方法
                     if url_type.lower() in ['base64', 'base64-encoded']:
-                        url = base64.b64decode(url_raw).decode('utf-8')
+                        url = base64.urlsafe_b64decode(url_raw).decode('utf-8')
                     elif url_type.lower() in ['urlencode', 'urlencoded', 'url_encode', 'url encode']:
                         url = urllib.parse.unquote(url_raw)
                     elif url_type.lower() in ['raw', 'default', 'normal']:
@@ -420,7 +445,7 @@ class Handler(BaseHTTPRequestHandler):
                 source_url = self.fetch_local_url_txt('source.txt')
                 source_yaml = self.fetch_yaml(source_url, 'source')
             else:  # 否则尝试解码 base64
-                source_url = base64.b64decode(source).decode()
+                source_url = base64.urlsafe_b64decode(source).decode()
                 source_yaml = self.fetch_yaml(source_url, 'source')
 
             if not source_yaml:
@@ -436,7 +461,7 @@ class Handler(BaseHTTPRequestHandler):
             elif parser == self.magic_number:  # 如果为 幻数 那么就从本地读取 mixin.yaml
                 parser_yaml = self.fetch_local_yaml('parser.yaml')
             elif parser:  # 否则尝试解码 base64
-                parser_url = base64.b64decode(parser).decode()
+                parser_url = base64.urlsafe_b64decode(parser).decode()
                 parser_yaml = self.fetch_yaml(parser_url)
             else:  # 不提供 parser 参数就默认从本地获取，因为设计就是为了 parser，也是向前兼容
                 parser_yaml = self.fetch_local_yaml('parser.yaml')
@@ -455,7 +480,7 @@ class Handler(BaseHTTPRequestHandler):
                 elif mixin == self.magic_number:  # 如果为 幻数 那么就从本地读取 mixin.yaml
                     mixin_yaml = self.fetch_local_yaml('mixin.yaml')
                 else:  # 否则尝试解码 base64
-                    mixin_url = base64.b64decode(mixin).decode()
+                    mixin_url = base64.urlsafe_b64decode(mixin).decode()
                     mixin_yaml = self.fetch_yaml(mixin_url)
             else:  # 不提供 mixin 就不处理
                 mixin_yaml = None

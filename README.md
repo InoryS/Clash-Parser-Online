@@ -202,8 +202,8 @@ https://clash-parser-online-vercel.vercel.app/api?source=jynb&parser=jynb-test&m
 For personal use, if you are too lazy to pass parameters, you can use the preset magic number (default is 'jynb') to automatically read the configuration from the local file:
 
 - To read files from the local, you need to create `source.txt` or `source.json` and `parser.yaml` and `mixin.yaml` in the same directory or the upper directory of `parser.py`.
-- The first line of `source.txt` should write the subscription link, and the second line should write the encoding type of the subscription link (raw, url_encode or base64).
-- Using `source.json` allows you to manage multiple subscription connections. The format refers to this repository. `url` should write the subscription link, `url_type` can be raw, url_encode or base64, and `url_name` is a comment.
+- The first line of `source.txt` should write the subscription link, and the second line should write the encoding type of the subscription link (raw, url_encode or base64[Encoding method is urlsafe base64]).
+- Using `source.json` allows you to manage multiple subscription connections. The format refers to this repository. `url` should write the subscription link, `url_type` can be raw, url_encode or base64[Encoding method is urlsafe base64], and `url_name` is a comment.
 - The file formats of `parser.yaml` and `mixin.yaml` refer to the examples in this repository and the CFW documentation.
 
 <br>
@@ -231,6 +231,10 @@ See above for example requests.
 
 
 ### Public use
+
+**It is not recommended to use this service set up by others, as your query parameters may be logged, potentially leaking your subscription.**
+
+<br>
 
 Deploy directly and delete the local yaml file. Of course, there will be no problem keeping it.
 
@@ -465,8 +469,8 @@ https://clash-parser-online-vercel.vercel.app/api?source=jynb&parser=jynb-test&m
 对于个人使用，如果懒得传递参数，可以使用预设的幻数（默认为 'jynb'）从本地文件自动读取配置：
 
 - 要从本地读取文件，你需要在 `parser.py` 的同目录或上层目录创建 `source.txt` 或 `source.json` 和 `parser.yaml` 和 `mixin.yaml`。
-- `source.txt` 的第一行应写入订阅链接，第二行写订阅链接的编码类型（raw、url_encode 或 base64）。
--  使用 `source.json` 可以让你管理多个订阅连接，格式参考本仓库，`url` 应写入订阅链接，`url_type` 可以为 raw、url_encode 或 base64，`url_name` 是注释。
+- `source.txt` 的第一行应写入订阅链接，第二行写订阅链接的编码类型（raw、url_encode 或 base64[编码方式是urlsafe base64]）。
+-  使用 `source.json` 可以让你管理多个订阅连接，格式参考本仓库，`url` 应写入订阅链接，`url_type` 可以为 raw、url_encode 或 base64[编码方式是urlsafe base64]，`url_name` 是注释。
 - `parser.yaml` 和 `mixin.yaml` 文件格式参考本仓库示例以及 CFW 文档。
 
 <br>
@@ -496,6 +500,8 @@ https://clash-parser-online-vercel.vercel.app/api?source=jynb&parser=jynb-test&m
 ### 公共使用
 
 **不建议使用别人搭建的此服务，你的查询参数很可能会被记录，从而泄露你的订阅.**
+
+<br>
 
 直接部署，删除本地 yaml 文件即可，当然保留也不会有什么问题。
 
